@@ -1,6 +1,8 @@
 # Build outputs
 build/
 *.zip
+*.crx
+*.pem
 
 # Configuração de produção (contém Extension ID sensível)
 build.config.js
