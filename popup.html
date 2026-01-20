@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Volume for B</title>
   <link rel="stylesheet" href="popup.css">
 </head>
@@ -12,50 +13,60 @@
     <div class="header-content">
       <div class="title-section">
         <img src="icons/vfb48.png" alt="Volume for B" class="app-icon">
-        <h1>Volume for B</h1>
+        <h1 data-i18n="appTitle">Volume for B</h1>
       </div>
-      <div class="dark-mode-toggle" id="darkModeToggle" title="Alternar modo escuro/claro">
+      <button class="dark-mode-toggle" id="darkModeToggle" data-i18n-title="ariaToggleDarkMode"
+        data-i18n-aria="ariaToggleDarkMode" title="Alternar modo escuro/claro" aria-label="Alternar modo escuro/claro"
+        role="switch" aria-checked="false">
         <div class="toggle-switch">
           <div class="toggle-slider"></div>
         </div>
-        <span class="toggle-label">🌙</span>
-      </div>
+        <span class="toggle-label" aria-hidden="true">🌙</span>
+      </button>
     </div>
-    <p>Selecione uma aba com áudio abaixo e clique em "Iniciar".</p>
+    <p data-i18n="selectTabInstruction">Selecione uma aba com áudio abaixo e clique em "Iniciar".</p>
   </div>
 
-  <div class="message-area">
-    <div id="errorMessage" class="error-message"></div>
-    <div id="successMessage" class="success-message"></div>
+  <div class="message-area" role="status" aria-live="polite">
+    <div id="errorMessage" class="error-message" role="alert"></div>
+    <div id="successMessage" class="success-message" role="status"></div>
   </div>
 
   <div class="control-section">
-    <div class="control-buttons">
-      <button id="startBtn" class="btn btn-primary">Iniciar</button>
-      <button id="stopBtn" class="btn btn-danger" disabled>Parar</button>
-      <button id="muteBtn" class="btn btn-secondary" disabled>Mute</button>
-      <button id="resetBtn" class="btn btn-secondary" title="Resetar volume para 100%" disabled>Reset</button>
+    <div class="control-buttons" role="group" data-i18n-aria="ariaVolumeControls" aria-label="Controles de volume">
+      <button id="startBtn" class="btn btn-primary" data-i18n="btnStart" data-i18n-aria="ariaStartControl"
+        aria-label="Iniciar controle de volume">Iniciar</button>
+      <button id="stopBtn" class="btn btn-danger" disabled data-i18n="btnStop" data-i18n-aria="ariaStopControl"
+        aria-label="Parar controle de volume">Parar</button>
+      <button id="muteBtn" class="btn btn-secondary" disabled data-i18n="btnMute" data-i18n-aria="ariaToggleMute"
+        aria-label="Alternar mudo">Mute</button>
+      <button id="resetBtn" class="btn btn-secondary" disabled data-i18n="btnReset" data-i18n-title="ariaResetVolume"
+        data-i18n-aria="ariaResetVolume" title="Resetar volume para 100%"
+        aria-label="Resetar volume para 100%">Reset</button>
     </div>
 
     <div class="volume-control">
       <div class="volume-label">
-        <span>Volume:</span>
+        <label for="volumeSlider" data-i18n="labelVolume">Volume:</label>
         <span id="volumeValue" class="volume-value">100%</span>
       </div>
-      <input type="range" id="volumeSlider" class="volume-slider" min="0" max="600" value="100" disabled>
+      <input type="range" id="volumeSlider" class="volume-slider" min="0" max="600" value="100" disabled
+        aria-valuemin="0" aria-valuemax="600" aria-valuenow="100" data-i18n-aria="ariaAdjustVolume"
+        aria-label="Ajustar volume">
     </div>
 
-    <div id="domainInfo" class="domain-info" style="display: none;">
-      Domínio: <span id="currentDomain"></span>
+    <div id="domainInfo" class="domain-info" style="display: none;" aria-live="polite">
+      <span data-i18n="labelDomain">Domínio:</span> <span id="currentDomain"></span>
     </div>
   </div>
 
   <div class="control-section">
     <div class="tabs-section">
-      <h3>Abas com Áudio <span style="font-size: 10px; color: #666; font-weight: normal;">(clique para navegar)</span>
-      </h3>
-      <div id="tabsList" class="tabs-list">
-        <div class="loading">Carregando abas...</div>
+      <h3><span data-i18n="tabsWithAudio">Abas com Áudio</span> <span class="tabs-hint" data-i18n="tabsHint">(clique
+          para navegar)</span></h3>
+      <div id="tabsList" class="tabs-list" role="list" data-i18n-aria="ariaTabsList"
+        aria-label="Lista de abas com áudio">
+        <div class="loading" role="status" data-i18n="loadingTabs">Carregando abas...</div>
       </div>
     </div>
   </div>

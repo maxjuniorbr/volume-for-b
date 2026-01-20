@@ -15,8 +15,9 @@ class TabAudioProcessor {
   constructor(tabId, stream, initialGain = 100) {
     this.tabId = parseInt(tabId) || 0;
     this.stream = stream;
-    // Validação de ganho inicial
-    const validGain = Math.max(0, Math.min(600, parseInt(initialGain) || 100));
+    // Validação de ganho inicial - usar Number.isNaN para aceitar 0 corretamente
+    const parsedGain = parseInt(initialGain, 10);
+    const validGain = Math.max(0, Math.min(600, Number.isNaN(parsedGain) ? 100 : parsedGain));
     this.gain = validGain / 100;
     this.isMuted = false;
 
@@ -56,8 +57,9 @@ class TabAudioProcessor {
 
   setGain(gain) {
     if (this.gainNode) {
-      // Validação de ganho
-      const validGain = Math.max(0, Math.min(600, parseInt(gain) || 100)) / 100;
+      // Validação de ganho - usar Number.isNaN para aceitar 0 corretamente
+      const parsed = parseInt(gain, 10);
+      const validGain = Math.max(0, Math.min(600, Number.isNaN(parsed) ? 100 : parsed)) / 100;
       this.gain = validGain;
       this.gainNode.gain.value = this.isMuted ? 0 : this.gain;
     }
@@ -102,7 +104,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     'restoreAudio': () => handleRestoreAudio(message.tabId, message.gain, sendResponse),
     'stopProcessing': () => handleStopProcessing(message.tabId, sendResponse),
     'setGain': () => handleSetGain(message.tabId, message.gain, sendResponse),
-    'setMute': () => handleSetMute(message.tabId, message.muted, sendResponse)
+    'setMute': () => handleSetMute(message.tabId, message.muted, sendResponse),
+    'checkProcessor': () => handleCheckProcessor(message.tabId, sendResponse)
   };
 
   if (handlers[action]) {
@@ -111,10 +114,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+// Verificar se existe processador ativo para uma aba
+function handleCheckProcessor(tabId, sendResponse) {
+  const validTabId = parseInt(tabId) || 0;
+  const exists = audioProcessors.has(validTabId);
+  sendResponse({ exists });
+}
+
 async function handleProcessAudio(tabId, mediaStreamId, gain, sendResponse) {
   try {
     const validTabId = parseInt(tabId) || 0;
-    
+
     if (audioProcessors.has(validTabId)) {
       sendResponse({ success: false, error: 'Aba já está sendo processada' });
       return;
@@ -192,7 +202,7 @@ function handleSetGain(tabId, gain, sendResponse) {
   try {
     const validTabId = parseInt(tabId) || 0;
     const processor = audioProcessors.get(validTabId);
-    
+
     if (!processor) {
       sendResponse({ success: false, error: 'Nenhum processador encontrado para esta aba' });
       return;
@@ -211,7 +221,7 @@ function handleSetMute(tabId, muted, sendResponse) {
   try {
     const validTabId = parseInt(tabId) || 0;
     const processor = audioProcessors.get(validTabId);
-    
+
     if (!processor) {
       sendResponse({ success: false, error: 'Nenhum processador encontrado para esta aba' });
       return;

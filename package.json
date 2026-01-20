@@ -4,13 +4,21 @@
   "description": "Amplifique o volume de qualquer aba até 600%. Perfeito para vídeos, músicas e áudios com volume baixo.",
   "author": "Dianin",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "build": "node build-production.js",
     "dev": "echo 'Carregue a extensão no Chrome em modo desenvolvedor'",
-    "clean": "rm -rf build && rm -f *.zip"
+    "clean": "rm -rf build && rm -f *.zip",
+    "lint": "eslint *.js --fix",
+    "lint:check": "eslint *.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
-    "archiver": "^5.3.1"
+    "archiver": "^5.3.1",
+    "eslint": "^8.57.0",
+    "sharp": "^0.34.5",
+    "vitest": "^1.6.0"
   },
   "keywords": [
     "chrome-extension",

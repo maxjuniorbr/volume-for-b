@@ -1,0 +1,138 @@
+{
+    "extensionName": {
+        "message": "Volume for B",
+        "description": "Nome da extensão exibido na Chrome Web Store e no navegador"
+    },
+    "extensionDescription": {
+        "message": "Amplifique o volume de qualquer aba até 600%. Perfeito para vídeos, músicas e áudios com volume baixo.",
+        "description": "Descrição da extensão"
+    },
+    "appTitle": {
+        "message": "Volume for B",
+        "description": "Título exibido no popup"
+    },
+    "selectTabInstruction": {
+        "message": "Selecione uma aba com áudio abaixo e clique em \"Iniciar\".",
+        "description": "Instrução para o usuário"
+    },
+    "btnStart": {
+        "message": "Iniciar",
+        "description": "Botão para iniciar controle de volume"
+    },
+    "btnStop": {
+        "message": "Parar",
+        "description": "Botão para parar controle de volume"
+    },
+    "btnMute": {
+        "message": "Mute",
+        "description": "Botão para mutar"
+    },
+    "btnUnmute": {
+        "message": "Desmute",
+        "description": "Botão para desmutar"
+    },
+    "btnReset": {
+        "message": "Reset",
+        "description": "Botão para resetar volume"
+    },
+    "btnLoading": {
+        "message": "Carregando...",
+        "description": "Estado de loading do botão"
+    },
+    "labelVolume": {
+        "message": "Volume:",
+        "description": "Rótulo do controle de volume"
+    },
+    "labelDomain": {
+        "message": "Domínio:",
+        "description": "Rótulo do domínio atual"
+    },
+    "tabsWithAudio": {
+        "message": "Abas com Áudio",
+        "description": "Título da seção de abas"
+    },
+    "tabsHint": {
+        "message": "(clique para navegar)",
+        "description": "Dica de clique nas abas"
+    },
+    "loadingTabs": {
+        "message": "Carregando abas...",
+        "description": "Mensagem durante carregamento de abas"
+    },
+    "noTabsFound": {
+        "message": "Nenhuma aba com áudio encontrada",
+        "description": "Mensagem quando não há abas com áudio"
+    },
+    "statusControlled": {
+        "message": "Controlada",
+        "description": "Status de aba sendo controlada"
+    },
+    "statusAudible": {
+        "message": "Audível",
+        "description": "Status de aba com áudio"
+    },
+    "msgVolumeStarted": {
+        "message": "Controle de volume iniciado!",
+        "description": "Mensagem de sucesso ao iniciar"
+    },
+    "msgVolumeStopped": {
+        "message": "Controle de volume parado",
+        "description": "Mensagem de sucesso ao parar"
+    },
+    "msgTabMuted": {
+        "message": "Aba mutada",
+        "description": "Mensagem ao mutar"
+    },
+    "msgTabUnmuted": {
+        "message": "Aba desmutada",
+        "description": "Mensagem ao desmutar"
+    },
+    "msgSelectTab": {
+        "message": "Selecione uma aba para controlar",
+        "description": "Aviso para selecionar aba"
+    },
+    "msgNavigateError": {
+        "message": "Erro ao navegar para a aba",
+        "description": "Erro de navegação"
+    },
+    "msgCommunicationError": {
+        "message": "Erro de comunicação com a extensão",
+        "description": "Erro de comunicação"
+    },
+    "msgVolumeError": {
+        "message": "Erro ao definir volume",
+        "description": "Erro ao definir volume"
+    },
+    "ariaToggleDarkMode": {
+        "message": "Alternar modo escuro/claro",
+        "description": "Aria label do toggle de dark mode"
+    },
+    "ariaVolumeControls": {
+        "message": "Controles de volume",
+        "description": "Aria label do grupo de botões"
+    },
+    "ariaStartControl": {
+        "message": "Iniciar controle de volume",
+        "description": "Aria label do botão iniciar"
+    },
+    "ariaStopControl": {
+        "message": "Parar controle de volume",
+        "description": "Aria label do botão parar"
+    },
+    "ariaToggleMute": {
+        "message": "Alternar mudo",
+        "description": "Aria label do botão mute"
+    },
+    "ariaResetVolume": {
+        "message": "Resetar volume para 100%",
+        "description": "Aria label do botão reset"
+    },
+    "ariaAdjustVolume": {
+        "message": "Ajustar volume",
+        "description": "Aria label do slider"
+    },
+    "ariaTabsList": {
+        "message": "Lista de abas com áudio",
+        "description": "Aria label da lista de abas"
+    }
+}

@@ -40,6 +40,8 @@ body {
     gap: 6px;
     cursor: pointer;
     padding: 4px;
+    border: none;
+    background: transparent;
     border-radius: 6px;
     transition: background-color 0.2s;
     flex-shrink: 0;
@@ -47,6 +49,11 @@ body {
 
 .dark-mode-toggle:hover {
     background-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode-toggle:focus {
+    outline: 2px solid #007AFF;
+    outline-offset: 2px;
 }
 
 .toggle-switch {
@@ -98,6 +105,12 @@ body {
     font-size: 11px;
     color: #888;
     margin-top: 4px;
+}
+
+.tabs-hint {
+    font-size: 10px;
+    color: #666;
+    font-weight: normal;
 }
 
 .control-section {
@@ -171,8 +184,19 @@ body {
 }
 
 .volume-value {
-    color: #007AFF;
     font-weight: 600;
+}
+
+.volume-value.volume-normal {
+    color: #007AFF;
+}
+
+.volume-value.volume-high {
+    color: #FF9500;
+}
+
+.volume-value.volume-extreme {
+    color: #FF3B30;
 }
 
 .volume-slider {
@@ -246,6 +270,11 @@ body {
 .tab-item.controlled {
     background: #e3f2fd;
     border-left: 3px solid #007AFF;
+}
+
+.tab-item.selected {
+    background: #e3f2fd;
+    border-color: #007AFF;
 }
 
 .tab-info {
@@ -377,6 +406,14 @@ body.dark-mode .toggle-switch {
     background-color: #007AFF;
 }
 
+body.dark-mode .dark-mode-toggle:focus {
+    outline-color: #0066cc;
+}
+
+body.dark-mode .dark-mode-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 body.dark-mode .btn-primary {
     background: #0066cc;
 }
@@ -405,12 +442,32 @@ body.dark-mode .volume-slider {
     background: #444;
 }
 
+body.dark-mode .volume-value.volume-normal {
+    color: #4da6ff;
+}
+
+body.dark-mode .volume-value.volume-high {
+    color: #ffb84d;
+}
+
+body.dark-mode .volume-value.volume-extreme {
+    color: #ff6666;
+}
+
+body.dark-mode .volume-label {
+    color: #e0e0e0;
+}
+
 body.dark-mode .domain-info {
     color: #b0b0b0;
 }
 
 body.dark-mode .tabs-section h3 {
     color: #e0e0e0;
+}
+
+body.dark-mode .tabs-hint {
+    color: #999;
 }
 
 body.dark-mode .tab-item {
@@ -426,6 +483,11 @@ body.dark-mode .tab-item:hover {
 body.dark-mode .tab-item.controlled {
     background: #1a2332;
     border-left-color: #0066cc;
+}
+
+body.dark-mode .tab-item.selected {
+    background: #1a2332;
+    border-color: #0066cc;
 }
 
 body.dark-mode .tab-title {

@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Volume for B",
+  "name": "__MSG_extensionName__",
   "version": "1.0.0",
-  "description": "Amplifique o volume de qualquer aba até 600%. Perfeito para vídeos, músicas e áudios com volume baixo.",
+  "description": "__MSG_extensionDescription__",
   "author": "Dianin",
+  "default_locale": "pt_BR",
   "permissions": [
     "tabs",
     "tabCapture",
@@ -23,6 +24,7 @@
   },
   "icons": {
     "16": "icons/vfb16.png",
+    "32": "icons/vfb32.png",
     "48": "icons/vfb48.png",
     "128": "icons/vfb128.png"
   },

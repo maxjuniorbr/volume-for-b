@@ -17,6 +17,7 @@ const successMessage = document.getElementById('successMessage');
 const darkModeToggle = document.getElementById('darkModeToggle');
 
 document.addEventListener('DOMContentLoaded', async () => {
+  applyI18n();
   setupEventListeners();
   await loadInitialState();
   await loadDarkModePreference();
@@ -24,10 +25,43 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupTabsUpdateListener();
 });
 
+// Aplicar internacionalização aos elementos
+function applyI18n() {
+  // Atualizar lang do documento baseado na locale
+  const uiLocale = chrome.i18n.getUILanguage();
+  document.documentElement.lang = uiLocale.startsWith('pt') ? 'pt-BR' : 'en';
+
+  // Aplicar texto traduzido
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const message = chrome.i18n.getMessage(key);
+    if (message) el.textContent = message;
+  });
+
+  // Aplicar aria-label traduzido
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+    const key = el.getAttribute('data-i18n-aria');
+    const message = chrome.i18n.getMessage(key);
+    if (message) el.setAttribute('aria-label', message);
+  });
+
+  // Aplicar title traduzido
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    const message = chrome.i18n.getMessage(key);
+    if (message) el.setAttribute('title', message);
+  });
+}
+
+// Obter mensagem i18n com fallback
+function i18n(key, fallback = '') {
+  return chrome.i18n.getMessage(key) || fallback;
+}
+
 function setupEventListeners() {
   startBtn.addEventListener('click', async () => {
     if (!currentTabId) {
-      showError('Selecione uma aba para controlar');
+      showError(i18n('msgSelectTab', 'Selecione uma aba para controlar'));
       return;
     }
     await startVolumeControl();
@@ -98,12 +132,12 @@ async function startVolumeControl() {
     if (response.success) {
       updateControlState(true, response.defaultGain || 100, false);
       showDomainInfo(response.domain);
-      showSuccess('Controle de volume iniciado!');
+      showSuccess(i18n('msgVolumeStarted', 'Controle de volume iniciado!'));
       await updateTabsList();
     } else {
       updateControlState(false, 100, false);
       hideDomainInfo();
-      showError(response.error || 'Erro ao iniciar controle de volume');
+      showError(response.error || i18n('msgCommunicationError', 'Erro ao iniciar controle de volume'));
       await updateTabsList();
     }
 
@@ -111,7 +145,7 @@ async function startVolumeControl() {
     console.error('Erro ao iniciar controle:', error);
     updateControlState(false, 100, false);
     hideDomainInfo();
-    showError('Erro de comunicação com a extensão');
+    showError(i18n('msgCommunicationError', 'Erro de comunicação com a extensão'));
     await updateTabsList();
   } finally {
     setLoading(startBtn, false);
@@ -131,17 +165,17 @@ async function stopVolumeControl() {
     if (response.success) {
       updateControlState(false, 100, false);
       hideDomainInfo();
-      showSuccess('Controle de volume parado');
+      showSuccess(i18n('msgVolumeStopped', 'Controle de volume parado'));
       await updateTabsList();
     } else {
       await checkTabControlStatus();
-      showError(response.error || 'Erro ao parar controle de volume');
+      showError(response.error || i18n('msgCommunicationError', 'Erro ao parar controle de volume'));
     }
 
   } catch (error) {
     console.error('Erro ao parar controle:', error);
     await checkTabControlStatus();
-    showError('Erro de comunicação com a extensão');
+    showError(i18n('msgCommunicationError', 'Erro de comunicação com a extensão'));
   } finally {
     setLoading(stopBtn, false);
   }
@@ -160,25 +194,26 @@ async function toggleMute() {
 
     if (response.success) {
       updateMuteState(newMutedState);
-      showSuccess(newMutedState ? 'Aba mutada' : 'Aba desmutada');
+      showSuccess(newMutedState ? i18n('msgTabMuted', 'Aba mutada') : i18n('msgTabUnmuted', 'Aba desmutada'));
     } else {
       await checkTabControlStatus();
-      showError(response.error || 'Erro ao mutar aba');
+      showError(response.error || i18n('msgCommunicationError', 'Erro ao mutar aba'));
     }
 
   } catch (error) {
     console.error('Erro ao alternar mute:', error);
     await checkTabControlStatus();
-    showError('Erro de comunicação com a extensão');
+    showError(i18n('msgCommunicationError', 'Erro de comunicação com a extensão'));
   }
 }
 
 // Definir volume
 async function setVolume(volume) {
   try {
-    // Validação de entrada
-    const validVolume = Math.max(0, Math.min(600, parseInt(volume) || 100));
-    
+    // Validação de entrada - usar Number.isNaN para aceitar 0 corretamente
+    const parsed = parseInt(volume, 10);
+    const validVolume = Math.max(0, Math.min(600, Number.isNaN(parsed) ? 100 : parsed));
+
     const response = await sendMessage({
       action: 'setVolume',
       tabId: currentTabId,
@@ -195,12 +230,12 @@ async function setVolume(volume) {
         });
       }
     } else {
-      showError(response.error || 'Erro ao definir volume');
+      showError(response.error || i18n('msgVolumeError', 'Erro ao definir volume'));
     }
 
   } catch (error) {
     console.error('Erro ao definir volume:', error);
-    showError('Erro de comunicação com a extensão');
+    showError(i18n('msgCommunicationError', 'Erro de comunicação com a extensão'));
   }
 }
 
@@ -224,17 +259,20 @@ async function updateTabsList() {
 // Renderizar lista de abas
 function renderTabsList(tabs) {
   if (tabs.length === 0) {
-    tabsList.innerHTML = '<div class="no-tabs">Nenhuma aba com áudio encontrada</div>';
+    tabsList.innerHTML = `<div class="no-tabs">${i18n('noTabsFound', 'Nenhuma aba com áudio encontrada')}</div>`;
     return;
   }
 
+  const statusControlled = i18n('statusControlled', 'Controlada');
+  const statusAudible = i18n('statusAudible', 'Audível');
+
   tabsList.innerHTML = tabs.map(tab => `
-    <div class="tab-item ${tab.controlled ? 'controlled' : ''}" data-tab-id="${tab.id}" title="Clique para navegar para esta aba">
+    <div class="tab-item ${tab.controlled ? 'controlled' : ''}" data-tab-id="${tab.id}" role="listitem">
       <div class="tab-info">
         <div class="tab-title">${escapeHtml(tab.title)}</div>
         <div class="tab-domain">${escapeHtml(tab.domain)}</div>
       </div>
-      <div class="tab-status">${tab.controlled ? 'Controlada' : 'Audível'}</div>
+      <div class="tab-status">${tab.controlled ? statusControlled : statusAudible}</div>
     </div>
   `).join('');
 
@@ -257,11 +295,11 @@ async function selectTab(tabId) {
 
   } catch (error) {
     console.error('Erro ao navegar para a aba:', error);
-    showError('Erro ao navegar para a aba');
+    showError(i18n('msgNavigateError', 'Erro ao navegar para a aba'));
   }
 
   tabsList.querySelectorAll('.tab-item').forEach(item => {
-    item.style.background = parseInt(item.dataset.tabId) === tabId ? '#e3f2fd' : '';
+    item.classList.toggle('selected', parseInt(item.dataset.tabId) === tabId);
   });
 
   checkTabControlStatus();
@@ -316,12 +354,18 @@ function updateMuteState(muted) {
 function updateVolumeDisplay(volume) {
   volumeValue.textContent = `${volume}%`;
 
+  // Atualizar aria-valuenow para acessibilidade
+  volumeSlider.setAttribute('aria-valuenow', volume);
+
+  // Usar classes CSS para cores que respeitam dark mode
+  volumeValue.classList.remove('volume-normal', 'volume-high', 'volume-extreme');
+
   if (volume <= 100) {
-    volumeValue.style.color = '#007AFF';
+    volumeValue.classList.add('volume-normal');
   } else if (volume <= 300) {
-    volumeValue.style.color = '#FF9500';
+    volumeValue.classList.add('volume-high');
   } else {
-    volumeValue.style.color = '#FF3B30';
+    volumeValue.classList.add('volume-extreme');
   }
 }
 
@@ -362,31 +406,44 @@ function showSuccess(message) {
 function setLoading(button, loading) {
   if (loading) {
     button.disabled = true;
-    button.textContent = 'Carregando...';
+    button.textContent = i18n('btnLoading', 'Carregando...');
   } else {
     button.disabled = false;
-    if (button === startBtn) button.textContent = 'Iniciar';
-    if (button === stopBtn) button.textContent = 'Parar';
+    if (button === startBtn) button.textContent = i18n('btnStart', 'Iniciar');
+    if (button === stopBtn) button.textContent = i18n('btnStop', 'Parar');
   }
 }
 
-// Enviar mensagem para service worker
-async function sendMessage(message) {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(message, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(response);
+// Enviar mensagem para service worker com retry
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 500;
+
+async function sendMessage(message, retries = MAX_RETRIES) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(message, (response) => {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve(response);
+          }
+        });
+      });
+    } catch (error) {
+      if (attempt === retries) {
+        throw error;
       }
-    });
-  });
+      // Exponential backoff
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * Math.pow(2, attempt - 1)));
+    }
+  }
 }
 
 // Escapar HTML para prevenir XSS
 function escapeHtml(text) {
   if (typeof text !== 'string') return '';
-  
+
   const div = document.createElement('div');
   div.textContent = text.substring(0, 500); // Limita tamanho
   return div.innerHTML;
@@ -398,7 +455,7 @@ function setupTabsUpdateListener() {
       updateTabsList();
     }
   });
-  
+
   chrome.runtime.sendMessage({ action: 'popupOpened' }).catch(() => {
   });
 }
@@ -417,8 +474,10 @@ async function loadDarkModePreference() {
 
     if (isDarkMode) {
       document.body.classList.add('dark-mode');
+      darkModeToggle.setAttribute('aria-checked', 'true');
       toggleLabel.textContent = '☀️';
     } else {
+      darkModeToggle.setAttribute('aria-checked', 'false');
       toggleLabel.textContent = '🌙';
     }
   } catch (error) {
@@ -431,6 +490,7 @@ function toggleDarkMode() {
   const toggleLabel = darkModeToggle.querySelector('.toggle-label');
 
   toggleLabel.textContent = isDarkMode ? '☀️' : '🌙';
+  darkModeToggle.setAttribute('aria-checked', isDarkMode.toString());
 
   saveDarkModePreference(isDarkMode);
 }

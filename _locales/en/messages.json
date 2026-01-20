@@ -1,0 +1,138 @@
+{
+    "extensionName": {
+        "message": "Volume for B",
+        "description": "Extension name displayed in Chrome Web Store and browser"
+    },
+    "extensionDescription": {
+        "message": "Amplify the volume of any tab up to 600%. Perfect for videos, music and audio with low volume.",
+        "description": "Extension description"
+    },
+    "appTitle": {
+        "message": "Volume for B",
+        "description": "Title displayed in popup"
+    },
+    "selectTabInstruction": {
+        "message": "Select a tab with audio below and click \"Start\".",
+        "description": "Instruction for user"
+    },
+    "btnStart": {
+        "message": "Start",
+        "description": "Button to start volume control"
+    },
+    "btnStop": {
+        "message": "Stop",
+        "description": "Button to stop volume control"
+    },
+    "btnMute": {
+        "message": "Mute",
+        "description": "Button to mute"
+    },
+    "btnUnmute": {
+        "message": "Unmute",
+        "description": "Button to unmute"
+    },
+    "btnReset": {
+        "message": "Reset",
+        "description": "Button to reset volume"
+    },
+    "btnLoading": {
+        "message": "Loading...",
+        "description": "Button loading state"
+    },
+    "labelVolume": {
+        "message": "Volume:",
+        "description": "Volume control label"
+    },
+    "labelDomain": {
+        "message": "Domain:",
+        "description": "Current domain label"
+    },
+    "tabsWithAudio": {
+        "message": "Tabs with Audio",
+        "description": "Tabs section title"
+    },
+    "tabsHint": {
+        "message": "(click to navigate)",
+        "description": "Click hint for tabs"
+    },
+    "loadingTabs": {
+        "message": "Loading tabs...",
+        "description": "Message while loading tabs"
+    },
+    "noTabsFound": {
+        "message": "No tabs with audio found",
+        "description": "Message when no audio tabs"
+    },
+    "statusControlled": {
+        "message": "Controlled",
+        "description": "Status of controlled tab"
+    },
+    "statusAudible": {
+        "message": "Audible",
+        "description": "Status of audible tab"
+    },
+    "msgVolumeStarted": {
+        "message": "Volume control started!",
+        "description": "Success message on start"
+    },
+    "msgVolumeStopped": {
+        "message": "Volume control stopped",
+        "description": "Success message on stop"
+    },
+    "msgTabMuted": {
+        "message": "Tab muted",
+        "description": "Message on mute"
+    },
+    "msgTabUnmuted": {
+        "message": "Tab unmuted",
+        "description": "Message on unmute"
+    },
+    "msgSelectTab": {
+        "message": "Select a tab to control",
+        "description": "Warning to select tab"
+    },
+    "msgNavigateError": {
+        "message": "Error navigating to tab",
+        "description": "Navigation error"
+    },
+    "msgCommunicationError": {
+        "message": "Error communicating with extension",
+        "description": "Communication error"
+    },
+    "msgVolumeError": {
+        "message": "Error setting volume",
+        "description": "Volume error"
+    },
+    "ariaToggleDarkMode": {
+        "message": "Toggle dark/light mode",
+        "description": "Aria label for dark mode toggle"
+    },
+    "ariaVolumeControls": {
+        "message": "Volume controls",
+        "description": "Aria label for button group"
+    },
+    "ariaStartControl": {
+        "message": "Start volume control",
+        "description": "Aria label for start button"
+    },
+    "ariaStopControl": {
+        "message": "Stop volume control",
+        "description": "Aria label for stop button"
+    },
+    "ariaToggleMute": {
+        "message": "Toggle mute",
+        "description": "Aria label for mute button"
+    },
+    "ariaResetVolume": {
+        "message": "Reset volume to 100%",
+        "description": "Aria label for reset button"
+    },
+    "ariaAdjustVolume": {
+        "message": "Adjust volume",
+        "description": "Aria label for slider"
+    },
+    "ariaTabsList": {
+        "message": "List of tabs with audio",
+        "description": "Aria label for tabs list"
+    }
+}

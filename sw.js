@@ -6,7 +6,7 @@ let popupIsOpen = false;
 function sanitizeString(input) {
   if (typeof input !== 'string') return '';
   return input
-    .replace(/[<>'"&]/g, function(match) {
+    .replace(/[<>'"&]/g, function (match) {
       return {
         '<': '&lt;',
         '>': '&gt;',
@@ -20,7 +20,46 @@ function sanitizeString(input) {
 }
 
 chrome.runtime.onStartup.addListener(restoreControllerState);
-chrome.runtime.onInstalled.addListener(restoreControllerState);
+chrome.runtime.onInstalled.addListener(async () => {
+  await restoreControllerState();
+  await cleanupOldDomains();
+});
+
+// Limpar domínios não acessados há mais de 30 dias
+const DOMAIN_MAX_AGE_DAYS = 30;
+
+async function cleanupOldDomains() {
+  try {
+    const storage = await chrome.storage.local.get(null);
+    const now = Date.now();
+    const maxAgeMs = DOMAIN_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+    const keysToRemove = [];
+
+    for (const [key, value] of Object.entries(storage)) {
+      if (key.startsWith('domain_')) {
+        // Se o valor é um objeto com lastAccessed, verificar idade
+        if (typeof value === 'object' && value.lastAccessed) {
+          if (now - value.lastAccessed > maxAgeMs) {
+            keysToRemove.push(key);
+          }
+        }
+        // Se é valor legado (número apenas), migrar para novo formato
+        else if (typeof value === 'number') {
+          await chrome.storage.local.set({
+            [key]: { gain: value, lastAccessed: now }
+          });
+        }
+      }
+    }
+
+    if (keysToRemove.length > 0) {
+      await chrome.storage.local.remove(keysToRemove);
+      console.log(`Cleanup: removidos ${keysToRemove.length} domínios antigos`);
+    }
+  } catch (error) {
+    console.error('Erro ao limpar domínios antigos:', error);
+  }
+}
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.audible !== undefined && popupIsOpen) {
@@ -30,10 +69,16 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
   if (tabControllers.has(tabId)) {
+    // Parar processamento de áudio no offscreen
+    chrome.runtime.sendMessage({
+      action: 'stopProcessing',
+      tabId
+    }).catch(() => { });
+
     tabControllers.delete(tabId);
     await saveControllerState();
   }
-  
+
   if (popupIsOpen) {
     notifyPopupTabsUpdated();
   }
@@ -63,8 +108,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function handleStartVolumeControl(tabId, sendResponse) {
   try {
+    // Se já está sendo controlada, apenas retorna sucesso com as configurações atuais
     if (tabControllers.has(tabId)) {
-      sendResponse({ success: false, error: 'Aba já está sendo controlada' });
+      const controller = tabControllers.get(tabId);
+      sendResponse({
+        success: true,
+        domain: controller.domain,
+        defaultGain: controller.currentGain
+      });
       return;
     }
 
@@ -76,21 +127,43 @@ async function handleStartVolumeControl(tabId, sendResponse) {
 
     await ensureOffscreenCreated();
 
-    const mediaStreamId = await chrome.tabCapture.getMediaStreamId({
-      targetTabId: tabId
-    });
-
-    await chrome.tabs.update(tabId, { muted: true });
+    // Verificar se o offscreen já tem um processador para esta aba
+    // Se sim, apenas reutilizar em vez de criar novo stream
+    let processResult;
+    try {
+      processResult = await chrome.runtime.sendMessage({
+        action: 'checkProcessor',
+        tabId
+      });
+    } catch (e) {
+      processResult = { exists: false };
+    }
 
     const domain = new URL(tab.url).hostname;
     const domainGain = await getDomainGainFromStorage(domain);
 
-    await chrome.runtime.sendMessage({
-      action: 'processAudio',
-      tabId,
-      mediaStreamId,
-      gain: domainGain || 100
-    });
+    if (processResult && processResult.exists) {
+      // Reutilizar processador existente
+      await chrome.runtime.sendMessage({
+        action: 'setGain',
+        tabId,
+        gain: domainGain || 100
+      });
+    } else {
+      // Criar novo processador
+      const mediaStreamId = await chrome.tabCapture.getMediaStreamId({
+        targetTabId: tabId
+      });
+
+      await chrome.tabs.update(tabId, { muted: true });
+
+      await chrome.runtime.sendMessage({
+        action: 'processAudio',
+        tabId,
+        mediaStreamId,
+        gain: domainGain || 100
+      });
+    }
 
     tabControllers.set(tabId, {
       domain,
@@ -108,6 +181,32 @@ async function handleStartVolumeControl(tabId, sendResponse) {
     });
 
   } catch (error) {
+    // Se o erro é de stream ativo, tentar reconectar
+    if (error.message && error.message.includes('active stream')) {
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        const domain = new URL(tab.url).hostname;
+        const domainGain = await getDomainGainFromStorage(domain);
+
+        tabControllers.set(tabId, {
+          domain,
+          originalMuted: tab.mutedInfo.muted,
+          currentGain: domainGain || 100,
+          isMuted: false
+        });
+
+        await saveControllerState();
+
+        sendResponse({
+          success: true,
+          domain,
+          defaultGain: domainGain || 100
+        });
+        return;
+      } catch (e) {
+        // Falha no fallback
+      }
+    }
     sendResponse({ success: false, error: error.message });
   }
 }
@@ -145,8 +244,9 @@ async function handleSetVolume(tabId, volume, sendResponse) {
       return;
     }
 
-    // Validação de volume
-    const validVolume = Math.max(0, Math.min(600, parseInt(volume) || 100));
+    // Validação de volume - usar Number.isNaN para aceitar 0 corretamente
+    const parsed = parseInt(volume, 10);
+    const validVolume = Math.max(0, Math.min(600, Number.isNaN(parsed) ? 100 : parsed));
 
     await chrome.runtime.sendMessage({
       action: 'setGain',
@@ -196,7 +296,7 @@ async function handleGetAudibleTabs(sendResponse) {
       } catch (error) {
         domain = 'unknown';
       }
-      
+
       return {
         id: tab.id,
         title: sanitizeString(tab.title || 'Sem título'),
@@ -246,7 +346,7 @@ async function handleGetDomainGain(domain, sendResponse) {
       sendResponse({ success: true, gain: 100 });
       return;
     }
-    
+
     const gain = await getDomainGainFromStorage(sanitizedDomain);
     sendResponse({ success: true, gain: gain || 100 });
   } catch (error) {
@@ -256,16 +356,23 @@ async function handleGetDomainGain(domain, sendResponse) {
 
 async function handleSaveDomainGain(domain, gain, sendResponse) {
   try {
-    // Validação de entrada
+    // Validação de entrada - usar Number.isNaN para aceitar 0 corretamente
     const sanitizedDomain = sanitizeString(domain);
-    const validGain = Math.max(0, Math.min(600, parseInt(gain) || 100));
-    
+    const parsedGain = parseInt(gain, 10);
+    const validGain = Math.max(0, Math.min(600, Number.isNaN(parsedGain) ? 100 : parsedGain));
+
     if (!sanitizedDomain || sanitizedDomain.length < 3) {
       sendResponse({ success: false, error: 'Domínio inválido' });
       return;
     }
-    
-    await chrome.storage.local.set({ [`domain_${sanitizedDomain}`]: validGain });
+
+    // Salvar com timestamp de último acesso para cleanup futuro
+    await chrome.storage.local.set({
+      [`domain_${sanitizedDomain}`]: {
+        gain: validGain,
+        lastAccessed: Date.now()
+      }
+    });
     sendResponse({ success: true });
   } catch (error) {
     sendResponse({ success: false, error: error.message });
@@ -293,19 +400,14 @@ async function ensureOffscreenCreated() {
 
 async function getDomainGainFromStorage(domain) {
   const result = await chrome.storage.local.get([`domain_${domain}`]);
-  return result[`domain_${domain}`];
-}
+  const value = result[`domain_${domain}`];
 
-chrome.tabs.onRemoved.addListener((tabId) => {
-  if (tabControllers.has(tabId)) {
-    chrome.runtime.sendMessage({
-      action: 'stopProcessing',
-      tabId
-    }).catch(() => { });
-
-    tabControllers.delete(tabId);
+  // Suporte a formato legado (número) e novo formato (objeto com gain/lastAccessed)
+  if (typeof value === 'object' && value !== null) {
+    return value.gain;
   }
-});
+  return value; // formato legado ou undefined
+}
 
 // Funções para gerenciar estado do popup
 function handlePopupOpened(sendResponse) {
@@ -336,7 +438,7 @@ async function saveControllerState() {
     for (const [tabId, controller] of tabControllers) {
       controllersObj[tabId] = controller;
     }
-    
+
     await chrome.storage.local.set({
       tabControllers: controllersObj
     });
@@ -348,14 +450,14 @@ async function saveControllerState() {
 async function restoreControllerState() {
   try {
     const result = await chrome.storage.local.get(['tabControllers']);
-    
+
     if (result.tabControllers) {
       for (const [tabId, controller] of Object.entries(result.tabControllers)) {
         try {
           const tab = await chrome.tabs.get(parseInt(tabId));
           if (tab && tab.audible) {
             tabControllers.set(parseInt(tabId), controller);
-            
+
             await ensureOffscreenCreated();
             await chrome.runtime.sendMessage({
               action: 'restoreAudio',
@@ -369,7 +471,7 @@ async function restoreControllerState() {
           console.log(`Aba ${tabId} não existe mais, removendo do estado`);
         }
       }
-      
+
       await saveControllerState();
     }
   } catch (error) {
