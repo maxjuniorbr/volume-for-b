@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Volume for B</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <div class="header">
+    <div class="header-content">
+      <div class="title-section">
+        <img src="icons/vfb48.png" alt="Volume for B" class="app-icon">
+        <h1>Volume for B</h1>
+      </div>
+      <div class="dark-mode-toggle" id="darkModeToggle" title="Alternar modo escuro/claro">
+        <div class="toggle-switch">
+          <div class="toggle-slider"></div>
+        </div>
+        <span class="toggle-label">🌙</span>
+      </div>
+    </div>
+    <p>Selecione uma aba com áudio abaixo e clique em "Iniciar".</p>
+  </div>
+
+  <div class="message-area">
+    <div id="errorMessage" class="error-message"></div>
+    <div id="successMessage" class="success-message"></div>
+  </div>
+
+  <div class="control-section">
+    <div class="control-buttons">
+      <button id="startBtn" class="btn btn-primary">Iniciar</button>
+      <button id="stopBtn" class="btn btn-danger" disabled>Parar</button>
+      <button id="muteBtn" class="btn btn-secondary" disabled>Mute</button>
+      <button id="resetBtn" class="btn btn-secondary" title="Resetar volume para 100%" disabled>Reset</button>
+    </div>
+
+    <div class="volume-control">
+      <div class="volume-label">
+        <span>Volume:</span>
+        <span id="volumeValue" class="volume-value">100%</span>
+      </div>
+      <input type="range" id="volumeSlider" class="volume-slider" min="0" max="600" value="100" disabled>
+    </div>
+
+    <div id="domainInfo" class="domain-info" style="display: none;">
+      Domínio: <span id="currentDomain"></span>
+    </div>
+  </div>
+
+  <div class="control-section">
+    <div class="tabs-section">
+      <h3>Abas com Áudio <span style="font-size: 10px; color: #666; font-weight: normal;">(clique para navegar)</span>
+      </h3>
+      <div id="tabsList" class="tabs-list">
+        <div class="loading">Carregando abas...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+  <footer class="footer">by Dianin</footer>
+</body>
+
+</html>

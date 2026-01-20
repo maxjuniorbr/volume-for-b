@@ -1,0 +1,22 @@
+# Build outputs
+build/
+*.zip
+
+# Configuração de produção (contém Extension ID sensível)
+build.config.js
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo

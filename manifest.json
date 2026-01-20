@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Volume for B",
+  "version": "1.0.0",
+  "description": "Amplifique o volume de qualquer aba até 600%. Perfeito para vídeos, músicas e áudios com volume baixo.",
+  "author": "Dianin",
+  "permissions": [
+    "tabs",
+    "tabCapture",
+    "offscreen",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "sw.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/vfb16.png",
+      "48": "icons/vfb48.png",
+      "128": "icons/vfb128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/vfb16.png",
+    "48": "icons/vfb48.png",
+    "128": "icons/vfb128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline';"
+  }
+}

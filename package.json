@@ -1,0 +1,22 @@
+{
+  "name": "volume-for-b",
+  "version": "1.0.0",
+  "description": "Amplifique o volume de qualquer aba até 600%. Perfeito para vídeos, músicas e áudios com volume baixo.",
+  "author": "Dianin",
+  "license": "MIT",
+  "scripts": {
+    "build": "node build-production.js",
+    "dev": "echo 'Carregue a extensão no Chrome em modo desenvolvedor'",
+    "clean": "rm -rf build && rm -f *.zip"
+  },
+  "devDependencies": {
+    "archiver": "^5.3.1"
+  },
+  "keywords": [
+    "chrome-extension",
+    "volume",
+    "audio",
+    "amplifier",
+    "browser"
+  ]
+}
