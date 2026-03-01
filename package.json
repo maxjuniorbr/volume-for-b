@@ -18,7 +18,7 @@
     "archiver": "^5.3.1",
     "eslint": "^8.57.0",
     "sharp": "^0.34.5",
-    "vitest": "^1.6.0"
+    "vitest": "^4.0.18"
   },
   "keywords": [
     "chrome-extension",
