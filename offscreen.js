@@ -13,10 +13,10 @@ function initAudioContext() {
 
 class TabAudioProcessor {
   constructor(tabId, stream, initialGain = 100) {
-    this.tabId = parseInt(tabId) || 0;
+    this.tabId = Number.parseInt(tabId) || 0;
     this.stream = stream;
     // Validação de ganho inicial - usar Number.isNaN para aceitar 0 corretamente
-    const parsedGain = parseInt(initialGain, 10);
+    const parsedGain = Number.parseInt(initialGain, 10);
     const validGain = Math.max(0, Math.min(600, Number.isNaN(parsedGain) ? 100 : parsedGain));
     this.gain = validGain / 100;
     this.isMuted = false;
@@ -58,7 +58,7 @@ class TabAudioProcessor {
   setGain(gain) {
     if (this.gainNode) {
       // Validação de ganho - usar Number.isNaN para aceitar 0 corretamente
-      const parsed = parseInt(gain, 10);
+      const parsed = Number.parseInt(gain, 10);
       const validGain = Math.max(0, Math.min(600, Number.isNaN(parsed) ? 100 : parsed)) / 100;
       this.gain = validGain;
       this.gainNode.gain.value = this.isMuted ? 0 : this.gain;
@@ -116,14 +116,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Verificar se existe processador ativo para uma aba
 function handleCheckProcessor(tabId, sendResponse) {
-  const validTabId = parseInt(tabId) || 0;
+  const validTabId = Number.parseInt(tabId) || 0;
   const exists = audioProcessors.has(validTabId);
   sendResponse({ exists });
 }
 
 async function handleProcessAudio(tabId, mediaStreamId, gain, sendResponse) {
   try {
-    const validTabId = parseInt(tabId) || 0;
+    const validTabId = Number.parseInt(tabId) || 0;
 
     if (audioProcessors.has(validTabId)) {
       sendResponse({ success: false, error: 'Aba já está sendo processada' });
@@ -200,7 +200,7 @@ function handleStopProcessing(tabId, sendResponse) {
 
 function handleSetGain(tabId, gain, sendResponse) {
   try {
-    const validTabId = parseInt(tabId) || 0;
+    const validTabId = Number.parseInt(tabId) || 0;
     const processor = audioProcessors.get(validTabId);
 
     if (!processor) {
@@ -219,7 +219,7 @@ function handleSetGain(tabId, gain, sendResponse) {
 
 function handleSetMute(tabId, muted, sendResponse) {
   try {
-    const validTabId = parseInt(tabId) || 0;
+    const validTabId = Number.parseInt(tabId) || 0;
     const processor = audioProcessors.get(validTabId);
 
     if (!processor) {

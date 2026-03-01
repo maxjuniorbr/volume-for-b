@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 
 // Função de validação de volume extraída para teste
 function validateVolume(volume) {
-    const parsed = parseInt(volume, 10);
+    const parsed = Number.parseInt(volume, 10);
     return Math.max(0, Math.min(600, Number.isNaN(parsed) ? 100 : parsed));
 }
 
@@ -15,7 +15,7 @@ function validateVolume(volume) {
 function sanitizeString(input) {
     if (typeof input !== 'string') return '';
     return input
-        .replace(/[<>'"&]/g, function (match) {
+        .replaceAll(/[<>'"&]/g, function (match) {
             return {
                 '<': '&lt;',
                 '>': '&gt;',
@@ -58,7 +58,7 @@ describe('validateVolume', () => {
         expect(validateVolume('abc')).toBe(100);
         expect(validateVolume(undefined)).toBe(100);
         expect(validateVolume(null)).toBe(100);
-        expect(validateVolume(NaN)).toBe(100);
+        expect(validateVolume(Number.NaN)).toBe(100);
     });
 
     it('deve aceitar valores decimais truncando para inteiro', () => {

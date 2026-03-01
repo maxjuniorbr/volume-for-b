@@ -27,13 +27,13 @@
     <p data-i18n="selectTabInstruction">Selecione uma aba com áudio abaixo e clique em "Iniciar".</p>
   </div>
 
-  <div class="message-area" role="status" aria-live="polite">
+  <output class="message-area" aria-live="polite">
     <div id="errorMessage" class="error-message" role="alert"></div>
-    <div id="successMessage" class="success-message" role="status"></div>
-  </div>
+    <output id="successMessage" class="success-message"></output>
+  </output>
 
   <div class="control-section">
-    <div class="control-buttons" role="group" data-i18n-aria="ariaVolumeControls" aria-label="Controles de volume">
+    <fieldset class="control-buttons" data-i18n-aria="ariaVolumeControls" aria-label="Controles de volume">
       <button id="startBtn" class="btn btn-primary" data-i18n="btnStart" data-i18n-aria="ariaStartControl"
         aria-label="Iniciar controle de volume">Iniciar</button>
       <button id="stopBtn" class="btn btn-danger" disabled data-i18n="btnStop" data-i18n-aria="ariaStopControl"
@@ -43,7 +43,7 @@
       <button id="resetBtn" class="btn btn-secondary" disabled data-i18n="btnReset" data-i18n-title="ariaResetVolume"
         data-i18n-aria="ariaResetVolume" title="Resetar volume para 100%"
         aria-label="Resetar volume para 100%">Reset</button>
-    </div>
+    </fieldset>
 
     <div class="volume-control">
       <div class="volume-label">
@@ -64,10 +64,10 @@
     <div class="tabs-section">
       <h3><span data-i18n="tabsWithAudio">Abas com Áudio</span> <span class="tabs-hint" data-i18n="tabsHint">(clique
           para navegar)</span></h3>
-      <div id="tabsList" class="tabs-list" role="list" data-i18n-aria="ariaTabsList"
+      <ul id="tabsList" class="tabs-list" data-i18n-aria="ariaTabsList"
         aria-label="Lista de abas com áudio">
-        <div class="loading" role="status" data-i18n="loadingTabs">Carregando abas...</div>
-      </div>
+        <li class="loading"><output data-i18n="loadingTabs">Carregando abas...</output></li>
+      </ul>
     </div>
   </div>
 
