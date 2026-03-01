@@ -95,6 +95,14 @@ function setupEventListeners() {
   darkModeToggle.addEventListener('click', () => {
     toggleDarkMode();
   });
+
+  tabsList.addEventListener('click', (event) => {
+    const item = event.target.closest('.tab-item');
+    if (item && tabsList.contains(item)) {
+      const tabId = parseInt(item.dataset.tabId);
+      selectTab(tabId);
+    }
+  });
 }
 
 // Carregar estado inicial
@@ -275,13 +283,6 @@ function renderTabsList(tabs) {
       <div class="tab-status">${tab.controlled ? statusControlled : statusAudible}</div>
     </div>
   `).join('');
-
-  tabsList.querySelectorAll('.tab-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const tabId = parseInt(item.dataset.tabId);
-      selectTab(tabId);
-    });
-  });
 }
 
 async function selectTab(tabId) {
