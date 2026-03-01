@@ -17,9 +17,16 @@ node_modules/
 .DS_Store
 Thumbs.db
 
+# Environment
+.env*
+
 # Editor files
 .vscode/
 .idea/
 *.swp
 *.swo
 *.code-workspace
+
+# Agent skills (installed via npx skills)
+.agents/
+skills-lock.json
