@@ -4,9 +4,11 @@ let popupIsOpen = false;
 
 // Função de sanitização para prevenir XSS
 function sanitizeString(input) {
-  if (typeof input !== 'string') return '';
+  if (typeof input !== 'string') {
+    return '';
+  }
   return input
-    .replace(/[<>'"&]/g, function (match) {
+    .replaceAll(/[<>'"&]/g, function (match) {
       return {
         '<': '&lt;',
         '>': '&gt;',
@@ -135,14 +137,14 @@ async function handleStartVolumeControl(tabId, sendResponse) {
         action: 'checkProcessor',
         tabId
       });
-    } catch (e) {
+    } catch (_e) {
       processResult = { exists: false };
     }
 
     const domain = new URL(tab.url).hostname;
     const domainGain = await getDomainGainFromStorage(domain);
 
-    if (processResult && processResult.exists) {
+    if (processResult?.exists) {
       // Reutilizar processador existente
       await chrome.runtime.sendMessage({
         action: 'setGain',
@@ -182,7 +184,7 @@ async function handleStartVolumeControl(tabId, sendResponse) {
 
   } catch (error) {
     // Se o erro é de stream ativo, tentar reconectar
-    if (error.message && error.message.includes('active stream')) {
+    if (error.message?.includes('active stream')) {
       try {
         const tab = await chrome.tabs.get(tabId);
         const domain = new URL(tab.url).hostname;
@@ -203,8 +205,8 @@ async function handleStartVolumeControl(tabId, sendResponse) {
           defaultGain: domainGain || 100
         });
         return;
-      } catch (e) {
-        // Falha no fallback
+      } catch (_e) {
+        console.debug('Fallback de reconexão falhou:', _e.message);
       }
     }
     sendResponse({ success: false, error: error.message });
@@ -245,7 +247,7 @@ async function handleSetVolume(tabId, volume, sendResponse) {
     }
 
     // Validação de volume - usar Number.isNaN para aceitar 0 corretamente
-    const parsed = parseInt(volume, 10);
+    const parsed = Number.parseInt(volume, 10);
     const validVolume = Math.max(0, Math.min(600, Number.isNaN(parsed) ? 100 : parsed));
 
     await chrome.runtime.sendMessage({
@@ -358,7 +360,7 @@ async function handleSaveDomainGain(domain, gain, sendResponse) {
   try {
     // Validação de entrada - usar Number.isNaN para aceitar 0 corretamente
     const sanitizedDomain = sanitizeString(domain);
-    const parsedGain = parseInt(gain, 10);
+    const parsedGain = Number.parseInt(gain, 10);
     const validGain = Math.max(0, Math.min(600, Number.isNaN(parsedGain) ? 100 : parsedGain));
 
     if (!sanitizedDomain || sanitizedDomain.length < 3) {
@@ -380,7 +382,9 @@ async function handleSaveDomainGain(domain, gain, sendResponse) {
 }
 
 async function ensureOffscreenCreated() {
-  if (offscreenCreated) return;
+  if (offscreenCreated) {
+    return;
+  }
 
   try {
     await chrome.offscreen.createDocument({
@@ -454,17 +458,17 @@ async function restoreControllerState() {
     if (result.tabControllers) {
       for (const [tabId, controller] of Object.entries(result.tabControllers)) {
         try {
-          const tab = await chrome.tabs.get(parseInt(tabId));
-          if (tab && tab.audible) {
-            tabControllers.set(parseInt(tabId), controller);
+          const tab = await chrome.tabs.get(Number.parseInt(tabId));
+          if (tab?.audible) {
+            tabControllers.set(Number.parseInt(tabId), controller);
 
             await ensureOffscreenCreated();
             await chrome.runtime.sendMessage({
               action: 'restoreAudio',
-              tabId: parseInt(tabId),
+              tabId: Number.parseInt(tabId),
               gain: controller.currentGain
             }).catch(() => {
-              tabControllers.delete(parseInt(tabId));
+              tabControllers.delete(Number.parseInt(tabId));
             });
           }
         } catch (error) {

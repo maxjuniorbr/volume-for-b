@@ -125,6 +125,9 @@ body {
     display: flex;
     gap: 8px;
     margin-bottom: 16px;
+    border: none;
+    padding: 0;
+    margin-inline: 0;
 }
 
 .btn {
@@ -139,7 +142,7 @@ body {
 }
 
 .btn-primary {
-    background: #007AFF;
+    background: #0060DF;
     color: white;
 }
 
@@ -153,7 +156,7 @@ body {
 }
 
 .btn-danger {
-    background: #FF3B30;
+    background: #D93025;
     color: white;
 }
 
@@ -162,7 +165,7 @@ body {
 }
 
 .btn-secondary {
-    background: #8E8E93;
+    background: #6E6E73;
     color: white;
 }
 
@@ -245,6 +248,13 @@ body {
 .tabs-list {
     max-height: 100px;
     overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.message-area {
+    display: block;
 }
 
 .tab-item {
@@ -300,7 +310,7 @@ body {
     font-size: 10px;
     padding: 2px 6px;
     border-radius: 10px;
-    background: #007AFF;
+    background: #0060DF;
     color: white;
 }
 
@@ -402,16 +412,8 @@ body.dark-mode .toggle-slider {
     transform: translateX(16px);
 }
 
-body.dark-mode .toggle-switch {
-    background-color: #007AFF;
-}
-
 body.dark-mode .dark-mode-toggle:focus {
     outline-color: #0066cc;
-}
-
-body.dark-mode .dark-mode-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.1);
 }
 
 body.dark-mode .btn-primary {

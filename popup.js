@@ -33,23 +33,29 @@ function applyI18n() {
 
   // Aplicar texto traduzido
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
+    const key = el.dataset.i18n;
     const message = chrome.i18n.getMessage(key);
-    if (message) el.textContent = message;
+    if (message) {
+      el.textContent = message;
+    }
   });
 
   // Aplicar aria-label traduzido
   document.querySelectorAll('[data-i18n-aria]').forEach(el => {
-    const key = el.getAttribute('data-i18n-aria');
+    const key = el.dataset.i18nAria;
     const message = chrome.i18n.getMessage(key);
-    if (message) el.setAttribute('aria-label', message);
+    if (message) {
+      el.setAttribute('aria-label', message);
+    }
   });
 
   // Aplicar title traduzido
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
-    const key = el.getAttribute('data-i18n-title');
+    const key = el.dataset.i18nTitle;
     const message = chrome.i18n.getMessage(key);
-    if (message) el.setAttribute('title', message);
+    if (message) {
+      el.setAttribute('title', message);
+    }
   });
 }
 
@@ -76,17 +82,19 @@ function setupEventListeners() {
   });
 
   volumeSlider.addEventListener('input', (e) => {
-    const volume = parseInt(e.target.value);
+    const volume = Number.parseInt(e.target.value);
     volumeValue.textContent = `${volume}%`;
   });
 
   volumeSlider.addEventListener('change', async (e) => {
-    const volume = parseInt(e.target.value);
+    const volume = Number.parseInt(e.target.value);
     await setVolume(volume);
   });
 
   resetBtn.addEventListener('click', async () => {
-    if (!isControlling) return;
+    if (!isControlling) {
+      return;
+    }
     await setVolume(100);
     volumeSlider.value = 100;
     volumeValue.textContent = '100%';
@@ -99,7 +107,7 @@ function setupEventListeners() {
   tabsList.addEventListener('click', (event) => {
     const item = event.target.closest('.tab-item');
     if (item && tabsList.contains(item)) {
-      const tabId = parseInt(item.dataset.tabId);
+      const tabId = Number.parseInt(item.dataset.tabId);
       selectTab(tabId);
     }
   });
@@ -219,7 +227,7 @@ async function toggleMute() {
 async function setVolume(volume) {
   try {
     // Validação de entrada - usar Number.isNaN para aceitar 0 corretamente
-    const parsed = parseInt(volume, 10);
+    const parsed = Number.parseInt(volume, 10);
     const validVolume = Math.max(0, Math.min(600, Number.isNaN(parsed) ? 100 : parsed));
 
     const response = await sendMessage({
@@ -267,7 +275,7 @@ async function updateTabsList() {
 // Renderizar lista de abas
 function renderTabsList(tabs) {
   if (tabs.length === 0) {
-    tabsList.innerHTML = `<div class="no-tabs">${i18n('noTabsFound', 'Nenhuma aba com áudio encontrada')}</div>`;
+    tabsList.innerHTML = `<li class="no-tabs">${i18n('noTabsFound', 'Nenhuma aba com áudio encontrada')}</li>`;
     return;
   }
 
@@ -275,13 +283,13 @@ function renderTabsList(tabs) {
   const statusAudible = i18n('statusAudible', 'Audível');
 
   tabsList.innerHTML = tabs.map(tab => `
-    <div class="tab-item ${tab.controlled ? 'controlled' : ''}" data-tab-id="${tab.id}" role="listitem">
+    <li class="tab-item ${tab.controlled ? 'controlled' : ''}" data-tab-id="${tab.id}">
       <div class="tab-info">
         <div class="tab-title">${escapeHtml(tab.title)}</div>
         <div class="tab-domain">${escapeHtml(tab.domain)}</div>
       </div>
       <div class="tab-status">${tab.controlled ? statusControlled : statusAudible}</div>
-    </div>
+    </li>
   `).join('');
 }
 
@@ -300,7 +308,7 @@ async function selectTab(tabId) {
   }
 
   tabsList.querySelectorAll('.tab-item').forEach(item => {
-    item.classList.toggle('selected', parseInt(item.dataset.tabId) === tabId);
+    item.classList.toggle('selected', Number.parseInt(item.dataset.tabId) === tabId);
   });
 
   checkTabControlStatus();
@@ -410,8 +418,12 @@ function setLoading(button, loading) {
     button.textContent = i18n('btnLoading', 'Carregando...');
   } else {
     button.disabled = false;
-    if (button === startBtn) button.textContent = i18n('btnStart', 'Iniciar');
-    if (button === stopBtn) button.textContent = i18n('btnStop', 'Parar');
+    if (button === startBtn) {
+      button.textContent = i18n('btnStart', 'Iniciar');
+    }
+    if (button === stopBtn) {
+      button.textContent = i18n('btnStop', 'Parar');
+    }
   }
 }
 
@@ -443,7 +455,9 @@ async function sendMessage(message, retries = MAX_RETRIES) {
 
 // Escapar HTML para prevenir XSS
 function escapeHtml(text) {
-  if (typeof text !== 'string') return '';
+  if (typeof text !== 'string') {
+    return '';
+  }
 
   const div = document.createElement('div');
   div.textContent = text.substring(0, 500); // Limita tamanho
@@ -469,7 +483,7 @@ window.addEventListener('beforeunload', () => {
 async function loadDarkModePreference() {
   try {
     const result = await chrome.storage.local.get(['darkMode']);
-    const isDarkMode = result.darkMode !== undefined ? result.darkMode : true;
+    const isDarkMode = result.darkMode === undefined ? true : result.darkMode;
 
     const toggleLabel = darkModeToggle.querySelector('.toggle-label');
 
