@@ -4,7 +4,7 @@
         "description": "Nome da extensão exibido na Chrome Web Store e no navegador"
     },
     "extensionDescription": {
-        "message": "Amplifique o volume de qualquer aba até 600%. Perfeito para vídeos, músicas e áudios com volume baixo.",
+        "message": "Amplifique o volume das abas com áudio em até 600%, com processamento local no navegador.",
         "description": "Descrição da extensão"
     },
     "appTitle": {

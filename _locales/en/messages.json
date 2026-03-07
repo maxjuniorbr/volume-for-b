@@ -4,7 +4,7 @@
         "description": "Extension name displayed in Chrome Web Store and browser"
     },
     "extensionDescription": {
-        "message": "Amplify the volume of any tab up to 600%. Perfect for videos, music and audio with low volume.",
+        "message": "Boost audio-tab volume up to 600% with local processing in your browser.",
         "description": "Extension description"
     },
     "appTitle": {
