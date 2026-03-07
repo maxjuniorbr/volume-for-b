@@ -62,10 +62,12 @@ function loadServiceWorker(chrome) {
     clearTimeout
   });
 
+  // Load the checked-in worker source into an isolated test sandbox.
   vm.runInContext(swSource, context, { filename: swPath });
 
   return {
     context,
+    // Static expressions expose worker internals without any user-controlled input.
     restoreControllerState: () => vm.runInContext('restoreControllerState()', context),
     readTabControllers: () => vm.runInContext('Array.from(tabControllers.entries())', context)
   };
