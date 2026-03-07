@@ -4,7 +4,6 @@ import { pathToFileURL } from 'node:url';
 import archiver from 'archiver';
 
 const DEFAULT_BUILD_CONFIG = {
-  EXTENSION_ID: '',
   BUILD_DIR: './build',
   ZIP_NAME: 'volume-for-b-production.zip'
 };
@@ -25,7 +24,7 @@ async function loadBuildConfig() {
   };
 }
 
-const { EXTENSION_ID, BUILD_DIR, ZIP_NAME } = await loadBuildConfig();
+const { BUILD_DIR, ZIP_NAME } = await loadBuildConfig();
 
 console.log('🚀 Iniciando build de produção da extensão Volume for B...');
 
@@ -49,6 +48,9 @@ function copyFiles() {
     'offscreen.html',
     'offscreen.js',
     'README.md',
+    'LICENSE',
+    'PRIVACY.md',
+    'SUPPORT.md',
     'SECURITY.md'
   ];
 
@@ -73,23 +75,8 @@ function updateManifest() {
   const manifestPath = path.join(BUILD_DIR, 'manifest.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
-  if (EXTENSION_ID) {
-    manifest.extension_id = EXTENSION_ID;
-  } else {
-    delete manifest.extension_id;
-  }
-
-  const version = manifest.version.split('.');
-  version[2] = (Number.parseInt(version[2], 10) + 1).toString();
-  manifest.version = version.join('.');
-
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-  console.log(`✅ Versão atualizada para: ${manifest.version}`);
-  if (EXTENSION_ID) {
-    console.log(`✅ Extension ID: ${EXTENSION_ID}`);
-  } else {
-    console.log('ℹ️ Build gerado sem extension_id customizado');
-  }
+  console.log(`✅ Versão preparada para publicação: ${manifest.version}`);
 }
 
 function createZip() {
@@ -146,9 +133,6 @@ async function build() {
 
     console.log('\n🎉 Build de produção concluído com sucesso!');
     console.log(`📦 Arquivo gerado: ${ZIP_NAME}`);
-    if (EXTENSION_ID) {
-      console.log(`🆔 Extension ID: ${EXTENSION_ID}`);
-    }
     console.log('\n📝 Próximos passos:');
     console.log(`   1. Faça upload do arquivo '${ZIP_NAME}' na Chrome Web Store`);
     console.log('   2. Configure as informações da listagem');

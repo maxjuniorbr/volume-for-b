@@ -1,6 +1,6 @@
 # Volume for B
 
-Extensão do Chrome para amplificar o volume de qualquer aba até 600%. Ideal para vídeos, músicas e áudios com volume baixo.
+Extensão do Chrome para amplificar o volume das abas com áudio em até 600%, com processamento local no navegador.
 
 **Sem propagandas. Sem coleta de dados. Código aberto.**
 
@@ -8,7 +8,7 @@ Extensão do Chrome para amplificar o volume de qualquer aba até 600%. Ideal pa
 
 ## Sobre
 
-Volume for B é uma extensão gratuita e de código aberto que permite controlar e amplificar o volume de abas individuais do navegador. O processamento de áudio é feito localmente, garantindo privacidade total.
+Volume for B é uma extensão gratuita e de código aberto com propósito único: aumentar o volume de abas que estão reproduzindo áudio. O processamento é feito localmente no navegador, sem envio de dados para servidores externos.
 
 ## Funcionalidades
 
@@ -40,7 +40,7 @@ Volume for B é uma extensão gratuita e de código aberto que permite controlar
 ### Instalação
 
 ```bash
-git clone https://github.com/seu-usuario/volume-for-b.git
+git clone https://github.com/maxjuniorbr/volume-for-b.git
 cd volume-for-b
 npm install
 ```
@@ -74,6 +74,11 @@ volume-for-b/
 2. Ative o "Modo de desenvolvedor"
 3. Clique em "Carregar sem compactação"
 4. Selecione a pasta do projeto
+
+## Suporte e Privacidade
+
+- Suporte: veja [SUPPORT.md](SUPPORT.md)
+- Privacidade: veja [PRIVACY.md](PRIVACY.md)
 
 ## Licença
 

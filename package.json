@@ -1,9 +1,17 @@
 {
   "name": "volume-for-b",
-  "version": "1.1.0",
-  "description": "Amplifique o volume de qualquer aba até 600%. Perfeito para vídeos, músicas e áudios com volume baixo.",
+  "version": "1.1.1",
+  "description": "Amplifique o volume das abas com áudio em até 600%, com processamento local no navegador.",
   "author": "Dianin",
   "license": "MIT",
+  "homepage": "https://github.com/maxjuniorbr/volume-for-b",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxjuniorbr/volume-for-b.git"
+  },
+  "bugs": {
+    "url": "https://github.com/maxjuniorbr/volume-for-b/issues"
+  },
   "type": "module",
   "scripts": {
     "build": "node build-production.js",
