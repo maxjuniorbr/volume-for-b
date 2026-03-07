@@ -2,6 +2,14 @@ const tabControllers = new Map();
 let offscreenCreated = false;
 let popupIsOpen = false;
 
+function formatErrorMessage(error) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
 // Função de sanitização para prevenir XSS
 function sanitizeString(input) {
   if (typeof input !== 'string') {
@@ -136,7 +144,8 @@ async function handleStartVolumeControl(tabId, sendResponse) {
         action: 'checkProcessor',
         tabId
       });
-    } catch (_e) {
+    } catch (error) {
+      console.debug(`Falha ao consultar processador existente da aba ${tabId}: ${formatErrorMessage(error)}`);
       processResult = { exists: false };
     }
 
@@ -295,6 +304,7 @@ async function handleGetAudibleTabs(sendResponse) {
         const url = new URL(tab.url);
         domain = url.hostname;
       } catch (error) {
+        console.debug(`URL inválida para a aba ${tab.id}: ${formatErrorMessage(error)}`);
         domain = 'unknown';
       }
 
@@ -329,6 +339,7 @@ async function handleGetControlledTabs(sendResponse) {
           isMuted: controller.isMuted
         });
       } catch (error) {
+        console.debug(`Aba controlada ${tabId} não está mais disponível: ${formatErrorMessage(error)}`);
         tabControllers.delete(tabId);
       }
     }
@@ -475,7 +486,7 @@ async function restoreControllerState() {
             return { tabId, controller };
           }
         } catch (error) {
-          console.log(`Aba ${tabId} não existe mais, removendo do estado`);
+          console.log(`Aba ${tabId} não existe mais, removendo do estado: ${formatErrorMessage(error)}`);
         }
 
         return null;
@@ -493,7 +504,8 @@ async function restoreControllerState() {
               tabId,
               gain: controller.currentGain
             });
-          } catch (_error) {
+          } catch (error) {
+            console.debug(`Falha ao restaurar áudio da aba ${tabId}: ${formatErrorMessage(error)}`);
             tabControllers.delete(tabId);
           }
         }));
