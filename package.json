@@ -1,10 +1,10 @@
 {
   "name": "volume-for-b",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Amplifique o volume das abas com áudio em até 600%, com processamento local no navegador.",
   "author": "Dianin",
   "license": "MIT",
-  "homepage": "https://github.com/maxjuniorbr/volume-for-b",
+  "homepage": "https://maxjuniorbr.github.io/volume-for-b/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/maxjuniorbr/volume-for-b.git"

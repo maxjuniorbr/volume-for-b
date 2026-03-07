@@ -4,6 +4,8 @@ Extensão do Chrome para amplificar o volume das abas com áudio em até 600%, c
 
 **Sem propagandas. Sem coleta de dados. Código aberto.**
 
+Página pública: https://maxjuniorbr.github.io/volume-for-b/
+
 ---
 
 ## Sobre
