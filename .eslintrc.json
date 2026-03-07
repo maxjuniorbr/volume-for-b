@@ -65,5 +65,17 @@
         "node_modules/",
         "build/",
         "*.zip"
+    ],
+    "overrides": [
+        {
+            "files": [
+                "build-production.js",
+                "build.config.example.js"
+            ],
+            "env": {
+                "node": true,
+                "browser": false
+            }
+        }
     ]
 }

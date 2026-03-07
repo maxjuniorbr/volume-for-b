@@ -1,28 +1,38 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const archiver = require('archiver');
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import archiver from 'archiver';
 
-// Carregar configuração
-let config;
-try {
-  config = require('./build.config.js');
-} catch (_error) {
-  console.error('❌ Erro: Arquivo build.config.js não encontrado!');
-  console.log('📋 Para corrigir:');
-  console.log('   1. Copie build.config.example.js para build.config.js');
-  console.log('   2. Configure seu Extension ID no arquivo');
-  console.log('   3. Execute o build novamente');
-  process.exit(1);
+const DEFAULT_BUILD_CONFIG = {
+  EXTENSION_ID: '',
+  BUILD_DIR: './build',
+  ZIP_NAME: 'volume-for-b-production.zip'
+};
+
+async function loadBuildConfig() {
+  const configPath = path.resolve('./build.config.js');
+
+  if (!fs.existsSync(configPath)) {
+    console.log('ℹ️ build.config.js não encontrado. Usando configuração padrão.');
+    console.log('ℹ️ Se quiser personalizar o build, copie build.config.example.js para build.config.js');
+    return DEFAULT_BUILD_CONFIG;
+  }
+
+  const configModule = await import(pathToFileURL(configPath).href);
+  return {
+    ...DEFAULT_BUILD_CONFIG,
+    ...(configModule.default ?? configModule)
+  };
 }
 
-const { EXTENSION_ID, BUILD_DIR, ZIP_NAME } = config;
+const { EXTENSION_ID, BUILD_DIR, ZIP_NAME } = await loadBuildConfig();
 
 console.log('🚀 Iniciando build de produção da extensão Volume for B...');
 
 function setupBuildDir() {
   if (fs.existsSync(BUILD_DIR)) {
     console.log('🧹 Limpando build anterior...');
-    fs.rmSync(BUILD_DIR, { recursive: true });
+    fs.rmSync(BUILD_DIR, { recursive: true, force: true });
   }
   fs.mkdirSync(BUILD_DIR, { recursive: true });
 }
@@ -51,23 +61,35 @@ function copyFiles() {
   if (fs.existsSync('icons')) {
     fs.cpSync('icons', path.join(BUILD_DIR, 'icons'), { recursive: true });
   }
+
+  if (fs.existsSync('_locales')) {
+    fs.cpSync('_locales', path.join(BUILD_DIR, '_locales'), { recursive: true });
+  }
 }
 
 function updateManifest() {
-  console.log('🆔 Adicionando Extension ID ao manifest...');
+  console.log('🆔 Atualizando manifest...');
 
   const manifestPath = path.join(BUILD_DIR, 'manifest.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
-  manifest.extension_id = EXTENSION_ID;
+  if (EXTENSION_ID) {
+    manifest.extension_id = EXTENSION_ID;
+  } else {
+    delete manifest.extension_id;
+  }
 
   const version = manifest.version.split('.');
-  version[2] = (Number.parseInt(version[2]) + 1).toString();
+  version[2] = (Number.parseInt(version[2], 10) + 1).toString();
   manifest.version = version.join('.');
 
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   console.log(`✅ Versão atualizada para: ${manifest.version}`);
-  console.log(`✅ Extension ID: ${EXTENSION_ID}`);
+  if (EXTENSION_ID) {
+    console.log(`✅ Extension ID: ${EXTENSION_ID}`);
+  } else {
+    console.log('ℹ️ Build gerado sem extension_id customizado');
+  }
 }
 
 function createZip() {
@@ -87,6 +109,7 @@ function createZip() {
       resolve();
     });
 
+    output.on('error', reject);
     archive.on('error', reject);
     archive.pipe(output);
 
@@ -100,7 +123,7 @@ function validateBuild() {
 
   const requiredFiles = [
     'manifest.json', 'popup.html', 'popup.css', 'popup.js',
-    'sw.js', 'offscreen.html', 'offscreen.js', 'icons'
+    'sw.js', 'offscreen.html', 'offscreen.js', 'icons', '_locales'
   ];
 
   for (const file of requiredFiles) {
@@ -123,7 +146,9 @@ async function build() {
 
     console.log('\n🎉 Build de produção concluído com sucesso!');
     console.log(`📦 Arquivo gerado: ${ZIP_NAME}`);
-    console.log(`🆔 Extension ID: ${EXTENSION_ID}`);
+    if (EXTENSION_ID) {
+      console.log(`🆔 Extension ID: ${EXTENSION_ID}`);
+    }
     console.log('\n📝 Próximos passos:');
     console.log(`   1. Faça upload do arquivo '${ZIP_NAME}' na Chrome Web Store`);
     console.log('   2. Configure as informações da listagem');
@@ -133,15 +158,8 @@ async function build() {
 
   } catch (error) {
     console.error('❌ Erro durante o build:', error.message);
-    process.exit(1);
+    globalThis.process.exit(1);
   }
 }
 
-try {
-  require.resolve('archiver');
-  await build();
-} catch (_e) {
-  console.log('📦 Instalando dependência archiver...');
-  console.log('Execute: npm install archiver');
-  console.log('Depois execute: node build-production.js');
-}
+await build();
