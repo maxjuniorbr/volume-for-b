@@ -44,9 +44,8 @@ async function cleanupOldDomains() {
           if (now - value.lastAccessed > maxAgeMs) {
             keysToRemove.push(key);
           }
-        }
-        // Se é valor legado (número apenas), migrar para novo formato
-        else if (typeof value === 'number') {
+        } else if (typeof value === 'number') {
+          // Se é valor legado (número apenas), migrar para novo formato
           await chrome.storage.local.set({
             [key]: { gain: value, lastAccessed: now }
           });
@@ -63,13 +62,13 @@ async function cleanupOldDomains() {
   }
 }
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener((_tabId, changeInfo, _tab) => {
   if (changeInfo.audible !== undefined && popupIsOpen) {
     notifyPopupTabsUpdated();
   }
 });
 
-chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
+chrome.tabs.onRemoved.addListener(async (tabId, _removeInfo) => {
   if (tabControllers.has(tabId)) {
     // Parar processamento de áudio no offscreen
     chrome.runtime.sendMessage({
@@ -456,24 +455,48 @@ async function restoreControllerState() {
     const result = await chrome.storage.local.get(['tabControllers']);
 
     if (result.tabControllers) {
-      for (const [tabId, controller] of Object.entries(result.tabControllers)) {
-        try {
-          const tab = await chrome.tabs.get(Number.parseInt(tabId));
-          if (tab?.audible) {
-            tabControllers.set(Number.parseInt(tabId), controller);
+      const storedControllers = Object.entries(result.tabControllers)
+        .map(([tabId, controller]) => {
+          const validTabId = Number.parseInt(tabId, 10);
 
-            await ensureOffscreenCreated();
-            await chrome.runtime.sendMessage({
-              action: 'restoreAudio',
-              tabId: Number.parseInt(tabId),
-              gain: controller.currentGain
-            }).catch(() => {
-              tabControllers.delete(Number.parseInt(tabId));
-            });
+          if (Number.isNaN(validTabId)) {
+            console.log(`ID de aba inválido no estado salvo: ${tabId}`);
+            return null;
+          }
+
+          return { tabId: validTabId, controller };
+        })
+        .filter(Boolean);
+
+      const restorableTabs = (await Promise.all(storedControllers.map(async ({ tabId, controller }) => {
+        try {
+          const tab = await chrome.tabs.get(tabId);
+          if (tab?.audible) {
+            return { tabId, controller };
           }
         } catch (error) {
           console.log(`Aba ${tabId} não existe mais, removendo do estado`);
         }
+
+        return null;
+      }))).filter(Boolean);
+
+      if (restorableTabs.length > 0) {
+        await ensureOffscreenCreated();
+
+        await Promise.all(restorableTabs.map(async ({ tabId, controller }) => {
+          tabControllers.set(tabId, controller);
+
+          try {
+            await chrome.runtime.sendMessage({
+              action: 'restoreAudio',
+              tabId,
+              gain: controller.currentGain
+            });
+          } catch (_error) {
+            tabControllers.delete(tabId);
+          }
+        }));
       }
 
       await saveControllerState();

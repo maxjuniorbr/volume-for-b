@@ -1,6 +1,5 @@
 let currentTabId = null;
 let isControlling = false;
-let currentVolume = 100;
 let isMuted = false;
 
 const startBtn = document.getElementById('startBtn');
@@ -237,7 +236,6 @@ async function setVolume(volume) {
     });
 
     if (response.success) {
-      currentVolume = validVolume;
       if (isControlling && currentDomain.textContent) {
         await sendMessage({
           action: 'saveDomainGain',
@@ -338,7 +336,6 @@ async function checkTabControlStatus() {
 
 function updateControlState(controlling, volume, muted) {
   isControlling = controlling;
-  currentVolume = volume;
   isMuted = muted;
 
   startBtn.disabled = controlling;
@@ -465,7 +462,7 @@ function escapeHtml(text) {
 }
 
 function setupTabsUpdateListener() {
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
     if (message.action === 'tabsUpdated') {
       updateTabsList();
     }
