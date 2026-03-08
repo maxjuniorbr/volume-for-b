@@ -1,15 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Volume for B | Mais volume por aba no navegador</title>
-  <meta name="description" content="Aumente o volume de videos, aulas e chamadas em abas do Chrome em ate 600%, com controle por aba e processamento local.">
-  <meta property="og:title" content="Volume for B | Mais volume por aba no navegador">
-  <meta property="og:description" content="Mais volume para abas com audio baixo, com controle por aba, processamento local e foco em privacidade.">
+  <title>Volume for B | More volume per browser tab</title>
+  <meta name="description" content="Boost videos, lessons, and calls in Chrome tabs up to 600%, with per-tab control and local processing.">
+  <meta property="og:title" content="Volume for B | More volume per browser tab">
+  <meta property="og:description" content="More volume for quiet tabs, with per-tab control, local processing, and privacy-first behavior.">
   <meta property="og:type" content="website">
   <link rel="icon" type="image/png" href="./volume-for-b.png">
+  <script>document.documentElement.dataset.js = 'on';</script>
   <style>
+    html[data-js='on'] body[data-ready='false'] {
+      visibility: hidden;
+    }
+
     @font-face {
       font-family: 'JetBrains Mono';
       font-style: normal;
@@ -642,7 +647,7 @@
     }
   </style>
 </head>
-<body>
+<body data-ready="false">
   <div class="noise"></div>
 
   <div class="page">
@@ -653,21 +658,21 @@
         </span>
         <span class="brand-copy">
           <strong>Volume for B</strong>
-          <span data-i18n="brand-subtitle">mais volume para abas com audio</span>
+          <span data-i18n="brand-subtitle">more volume for tabs with audio</span>
         </span>
       </a>
 
       <div class="nav-links mono">
-        <a class="nav-link" href="#what" data-i18n="nav-what">o que faz</a>
-        <a class="nav-link" href="#how" data-i18n="nav-how">como usar</a>
-        <a class="nav-link" href="#privacy" data-i18n="nav-privacy">privacidade</a>
+        <a class="nav-link" href="#what" data-i18n="nav-what">what it does</a>
+        <a class="nav-link" href="#how" data-i18n="nav-how">how to use</a>
+        <a class="nav-link" href="#privacy" data-i18n="nav-privacy">privacy</a>
         <a class="nav-link" href="#faq" data-i18n="nav-faq">faq</a>
       </div>
 
       <div class="nav-actions">
         <select class="lang-select mono" id="langSelect" aria-label="Select language">
-          <option value="pt-BR">PT</option>
           <option value="en">EN</option>
+          <option value="pt-BR">PT-BR</option>
           <option value="es">ES</option>
         </select>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☀</button>
@@ -676,47 +681,47 @@
 
     <header class="hero panel reveal" id="top">
       <div class="hero-copy">
-        <span class="hero-badge mono" data-i18n="hero-badge">extensao chrome para audio por aba</span>
-        <h1 data-i18n="hero-title">Quando o video esta baixo, a aba ganha reforco.</h1>
-        <p class="hero-lead" data-i18n="hero-lead">Aumente o volume de abas em ate 600%. Controle individual, processamento local e foco em privacidade.</p>
+        <span class="hero-badge mono" data-i18n="hero-badge">chrome extension for per-tab audio</span>
+        <h1 data-i18n="hero-title">When a video is too quiet, the tab gets a boost.</h1>
+        <p class="hero-lead" data-i18n="hero-lead">Boost tab audio up to 600%. Per-tab control, local processing, and privacy-first behavior.</p>
 
         <div class="hero-actions">
-          <a class="button mono" href="#how" data-i18n="hero-primary">entender como usar</a>
-          <a class="button-secondary mono" href="https://github.com/maxjuniorbr/volume-for-b" target="_blank" rel="noreferrer" data-i18n="hero-secondary">ver repositorio</a>
+          <a class="button mono" href="#how" data-i18n="hero-primary">learn how to use it</a>
+          <a class="button-secondary mono" href="https://github.com/maxjuniorbr/volume-for-b" target="_blank" rel="noreferrer" data-i18n="hero-secondary">view repository</a>
         </div>
 
         <div class="hero-stats">
           <div class="stat">
             <strong>600%</strong>
-            <span data-i18n="stat-1">ganho maximo para abas com audio</span>
+            <span data-i18n="stat-1">maximum gain for tabs with audio</span>
           </div>
           <div class="stat">
             <strong data-i18n="stat-2-title">local</strong>
-            <span data-i18n="stat-2">processamento no navegador, sem servidor externo</span>
+            <span data-i18n="stat-2">processing in the browser, with no external server</span>
           </div>
           <div class="stat">
-            <strong data-i18n="stat-3-title">por aba</strong>
-            <span data-i18n="stat-3">controle individual, mute, reset e memoria por dominio</span>
+            <strong data-i18n="stat-3-title">per tab</strong>
+            <span data-i18n="stat-3">individual control, mute, reset, and domain memory</span>
           </div>
         </div>
       </div>
 
       <aside class="hero-side">
         <div class="side-block">
-          <p class="eyebrow mono" data-i18n="side-kicker">em linguagem direta</p>
+          <p class="eyebrow mono" data-i18n="side-kicker">in plain language</p>
           <ul class="side-list">
-            <li data-i18n="side-1">Ajuda quando YouTube, Spotify, aulas, chamadas ou players web estao baixos demais.</li>
-            <li data-i18n="side-2">Nao mexe no volume geral do computador. O controle acontece na aba escolhida.</li>
-            <li data-i18n="side-3">Nao e um equalizador magico: ele aumenta ganho, nao corrige audio ruim.</li>
+            <li data-i18n="side-1">It helps when YouTube, Spotify, lessons, calls, or web players are too quiet.</li>
+            <li data-i18n="side-2">It does not change the computer's overall volume. Control happens on the selected tab.</li>
+            <li data-i18n="side-3">It is not a magic equalizer: it increases gain, it does not repair poor audio.</li>
           </ul>
         </div>
 
         <div class="side-block">
-          <p class="eyebrow mono" data-i18n="side-badges">resumo</p>
+          <p class="eyebrow mono" data-i18n="side-badges">summary</p>
           <div class="chip-row">
-            <span class="chip" data-i18n="chip-1">sem anuncios</span>
-            <span class="chip" data-i18n="chip-2">sem coleta de dados</span>
-            <span class="chip" data-i18n="chip-3">codigo aberto</span>
+            <span class="chip" data-i18n="chip-1">no ads</span>
+            <span class="chip" data-i18n="chip-2">no data collection</span>
+            <span class="chip" data-i18n="chip-3">open source</span>
           </div>
         </div>
       </aside>
@@ -1177,10 +1182,12 @@
     const themeToggle = document.getElementById('themeToggle');
     const html = document.documentElement;
     const metaDescription = document.querySelector('meta[name="description"]');
+    const metaOgTitle = document.querySelector('meta[property="og:title"]');
+    const metaOgDescription = document.querySelector('meta[property="og:description"]');
     const revealElements = document.querySelectorAll('.reveal');
 
     function updateLanguage(lang) {
-      const texts = translations[lang] || translations['pt-BR'];
+      const texts = translations[lang] || translations.en;
 
       document.querySelectorAll('[data-i18n]').forEach((element) => {
         const key = element.dataset.i18n;
@@ -1191,6 +1198,8 @@
 
       document.title = texts.metaTitle;
       metaDescription.setAttribute('content', texts.metaDescription);
+      metaOgTitle?.setAttribute('content', texts.metaTitle);
+      metaOgDescription?.setAttribute('content', texts.metaDescription);
       html.lang = lang;
       localStorage.setItem('vfb-lang', lang);
     }
@@ -1227,12 +1236,13 @@
       updateTheme(nextTheme);
     });
 
-    const savedLang = localStorage.getItem('vfb-lang') || 'pt-BR';
+    const savedLang = localStorage.getItem('vfb-lang') || 'en';
     const savedTheme = localStorage.getItem('vfb-theme');
 
     langSelect.value = savedLang;
     updateLanguage(savedLang);
     updateTheme(savedTheme || 'dark');
+    document.body.dataset.ready = 'true';
   </script>
 </body>
 </html>

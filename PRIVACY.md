@@ -1,46 +1,46 @@
-# Política de Privacidade
+# Privacy Policy
 
-`Volume for B` processa o áudio localmente no navegador para permitir o ajuste do volume das abas com áudio.
+`Volume for B` processes tab audio locally in the browser so it can adjust the volume of tabs with audio.
 
-## Resumo
+## Summary
 
-- o áudio é tratado localmente no navegador
-- preferências são armazenadas localmente
-- não há coleta de dados para servidores externos
-- não há analytics, trackers ou anúncios
+- audio is handled locally in the browser
+- preferences are stored locally
+- no data is sent to external servers
+- no analytics, trackers, or ads are used
 
-## Dados usados pela extensão
+## Data Used by the Extension
 
-- URLs e domínios das abas com áudio, para exibir a aba correta e salvar o volume por domínio
-- título da aba, para identificar a aba no popup
-- preferências locais, como ganho por domínio e modo escuro
+- URLs and domains of tabs with audio, so the extension can identify the correct tab and save per-domain volume
+- tab titles, so the popup can show the right tab
+- local preferences, such as per-domain gain and theme
 
-## O que a extensão não faz
+## What the Extension Does Not Do
 
-- não coleta dados pessoais em servidores externos
-- não vende dados
-- não compartilha dados com terceiros
-- não usa analytics, trackers ou anúncios
+- it does not collect personal data on external servers
+- it does not sell data
+- it does not share data with third parties
+- it does not use analytics, trackers, or ads
 
-## Compromisso com a Chrome Web Store User Data Policy
+## Chrome Web Store User Data Policy
 
-O uso dos dados acessados pela extensão segue a Chrome Web Store User Data Policy. Os dados usados para identificar abas e aplicar preferências locais são utilizados apenas para o funcionamento declarado da extensão, sem transferência para terceiros.
+Use of the data accessed by the extension follows the Chrome Web Store User Data Policy. Data used to identify tabs and apply local preferences is only used for the declared extension functionality, without transfer to third parties.
 
-## Armazenamento
+## Storage
 
-As preferências são armazenadas localmente usando `chrome.storage.local`.
+Preferences are stored locally with `chrome.storage.local`.
 
-## Serviços externos
+## External Services
 
-`Volume for B` não depende de serviços externos para processar áudio ou armazenar preferências.
+`Volume for B` does not depend on external services to process audio or store preferences.
 
-## Permissões
+## Permissions
 
-- `tabs`: listar abas com áudio e navegar até a aba selecionada
-- `tabCapture`: capturar o áudio da aba para aplicar ganho localmente
-- `offscreen`: processar áudio sem página visível
-- `storage`: salvar preferências locais
+- `tabs`: list tabs with audio and move focus to the selected tab
+- `tabCapture`: capture tab audio to apply local gain
+- `offscreen`: process audio without a visible page
+- `storage`: store local preferences
 
-## Contato
+## Contact
 
-Para suporte geral, consulte [SUPPORT.md](SUPPORT.md). Para relato de vulnerabilidades, consulte [SECURITY.md](SECURITY.md).
+For general support, see [SUPPORT.md](SUPPORT.md). To report vulnerabilities, see [SECURITY.md](SECURITY.md).

@@ -1,40 +1,40 @@
 # Volume for B
 
-Aumente o volume de abas do Chrome em até 600%, com controle por aba e processamento local no navegador.
+Boost Chrome tab audio up to 600%, with per-tab control and local processing in the browser.
 
-**Sem propagandas. Sem coleta de dados. Código aberto.**
+**Ad-free. No data collection. Open source.**
 
-Página da extensão: https://maxjuniorbr.github.io/volume-for-b/
+Extension page: https://maxjuniorbr.github.io/volume-for-b/
 
 ---
 
-## O que você precisa saber
+## What to Expect
 
-- Funciona quando o áudio de uma aba está baixo mesmo com o volume do navegador e do sistema já altos.
-- O controle é por aba. Ele não muda o volume geral do computador.
-- O processamento acontece localmente no navegador.
-- Ele aumenta ganho. Não corrige áudio ruim nem substitui hardware.
+- It helps when a browser tab is too quiet even with browser and system volume already high.
+- Control is per tab. It does not change the computer's overall volume.
+- Audio processing happens locally in the browser.
+- It increases gain. It does not fix poor source audio or replace hardware.
 
-## Principais recursos
+## Core Features
 
-- Volume de 0% a 600%
-- Controle individual por aba
-- Mute, unmute e reset rápido
-- Memória por domínio
-- Modo claro e escuro
-- Interface da extensão em português e inglês
-- Landing pública em PT-BR, EN e ES
+- 0% to 600% volume range
+- Per-tab audio control
+- Mute, unmute, and quick reset
+- Per-domain memory
+- Light and dark themes
+- Extension UI in Portuguese and English
+- Public landing page in EN, PT-BR, and ES
 
-## Stack e estrutura
+## Stack and Structure
 
-- Extensão Chrome Manifest V3
-- `popup.*` para interface
-- `sw.js` para orquestração da extensão
-- `offscreen.*` para processamento de áudio
-- `_locales/` para internacionalização
-- `tests/` com cobertura do fluxo principal
+- Chrome Extension Manifest V3
+- `popup.*` for the extension UI
+- `sw.js` for extension orchestration
+- `offscreen.*` for audio processing
+- `_locales/` for localization
+- `tests/` covering the core flow
 
-## Como rodar localmente
+## Run Locally
 
 ```bash
 git clone https://github.com/maxjuniorbr/volume-for-b.git
@@ -43,38 +43,38 @@ npm install
 npm test
 ```
 
-Depois disso:
+After that:
 
-1. Abra `chrome://extensions/`
-2. Ative o modo de desenvolvedor
-3. Clique em `Carregar sem compactação`
-4. Selecione a pasta do projeto
+1. Open `chrome://extensions/`
+2. Enable developer mode
+3. Click `Load unpacked`
+4. Select the project folder
 
-## Scripts principais
+## Main Scripts
 
 ```bash
-npm run dev        # Instruções para modo desenvolvedor
-npm run build      # Build de produção
-npm run lint       # Corrigir problemas de lint
-npm run lint:check # Validar lint sem alterar arquivos
-npm test           # Executar testes unitários
-npm run clean      # Limpar builds
+npm run dev        # Developer-mode instructions
+npm run build      # Production build
+npm run lint       # Fix lint issues
+npm run lint:check # Validate lint without changing files
+npm test           # Run unit tests
+npm run clean      # Remove build artifacts
 ```
 
-## Qualidade e validação
+## Quality and Validation
 
 - `npm run lint:check`
 - `npm test`
 - `npm run build`
-- SonarCloud com Quality Gate no nível `A`
+- SonarCloud with an `A` Quality Gate target
 
-## Documentos do projeto
+## Project Documents
 
-- Página pública: https://maxjuniorbr.github.io/volume-for-b/
-- Suporte: [SUPPORT.md](SUPPORT.md)
-- Privacidade: [PRIVACY.md](PRIVACY.md)
-- Segurança: [SECURITY.md](SECURITY.md)
+- Public page: https://maxjuniorbr.github.io/volume-for-b/
+- Support: [SUPPORT.md](SUPPORT.md)
+- Privacy: [PRIVACY.md](PRIVACY.md)
+- Security: [SECURITY.md](SECURITY.md)
 
-## Licença
+## License
 
-MIT. Veja [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
