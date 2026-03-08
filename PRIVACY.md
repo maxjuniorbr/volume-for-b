@@ -1,6 +1,13 @@
 # Política de Privacidade
 
-`Volume for B` processa o áudio localmente no navegador para permitir o ajuste de volume das abas com áudio.
+`Volume for B` processa o áudio localmente no navegador para permitir o ajuste do volume das abas com áudio.
+
+## Resumo
+
+- o áudio é tratado localmente no navegador
+- preferências são armazenadas localmente
+- não há coleta de dados para servidores externos
+- não há analytics, trackers ou anúncios
 
 ## Dados usados pela extensão
 
@@ -23,6 +30,10 @@ O uso dos dados acessados pela extensão segue a Chrome Web Store User Data Poli
 
 As preferências são armazenadas localmente usando `chrome.storage.local`.
 
+## Serviços externos
+
+`Volume for B` não depende de serviços externos para processar áudio ou armazenar preferências.
+
 ## Permissões
 
 - `tabs`: listar abas com áudio e navegar até a aba selecionada
@@ -32,4 +43,4 @@ As preferências são armazenadas localmente usando `chrome.storage.local`.
 
 ## Contato
 
-Para suporte ou dúvidas, consulte [SUPPORT.md](SUPPORT.md).
+Para suporte geral, consulte [SUPPORT.md](SUPPORT.md). Para relato de vulnerabilidades, consulte [SECURITY.md](SECURITY.md).
