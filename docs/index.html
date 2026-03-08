@@ -1201,7 +1201,6 @@
       metaOgTitle?.setAttribute('content', texts.metaTitle);
       metaOgDescription?.setAttribute('content', texts.metaDescription);
       html.lang = lang;
-      localStorage.setItem('vfb-lang', lang);
     }
 
     function updateTheme(theme) {
@@ -1236,11 +1235,10 @@
       updateTheme(nextTheme);
     });
 
-    const savedLang = localStorage.getItem('vfb-lang') || 'en';
     const savedTheme = localStorage.getItem('vfb-theme');
 
-    langSelect.value = savedLang;
-    updateLanguage(savedLang);
+    langSelect.value = 'en';
+    updateLanguage('en');
     updateTheme(savedTheme || 'dark');
     document.body.dataset.ready = 'true';
   </script>
