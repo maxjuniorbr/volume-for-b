@@ -1,22 +1,22 @@
-# Segurança
+# Security
 
-Se você identificar uma vulnerabilidade no `Volume for B`, evite abrir uma issue pública com detalhes exploráveis.
+If you identify a vulnerability in `Volume for B`, do not open a public issue with exploitable details.
 
-## Como reportar
+## How to Report
 
-- use a opção privada de vulnerabilidade do GitHub, se estiver disponível no repositório
-- se isso não estiver disponível, entre em contato pelo GitHub sem publicar payloads, tokens ou passos completos de exploração
+- use GitHub private vulnerability reporting if it is available in the repository
+- if it is not available, contact the project through GitHub without publishing payloads, tokens, or full exploitation steps
 
-## O que incluir
+## What to Include
 
-- descrição objetiva do problema
-- impacto esperado
-- navegador e versão usados
-- passos para reproduzir
-- evidências mínimas, como logs ou capturas
+- a concise description of the issue
+- expected impact
+- browser and version used
+- steps to reproduce
+- minimal evidence, such as logs or screenshots
 
-## Escopo
+## Scope
 
-Este documento cobre falhas de segurança na extensão, na documentação publicada e no processo de build versionado no repositório.
+This document covers vulnerabilities in the extension, the published documentation, and the versioned build process in the repository.
 
-Para suporte geral, dúvidas de uso ou sugestões, consulte [SUPPORT.md](SUPPORT.md).
+For general support, usage questions, or suggestions, see [SUPPORT.md](SUPPORT.md).

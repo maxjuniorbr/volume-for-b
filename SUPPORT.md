@@ -1,15 +1,15 @@
-# Suporte
+# Support
 
-Para relatar bugs, sugerir melhorias ou pedir ajuda com `Volume for B`:
+To report bugs, ask for help, or suggest improvements for `Volume for B`:
 
-- abra uma issue em: https://github.com/maxjuniorbr/volume-for-b/issues
-- inclua navegador, versão da extensão e passos para reproduzir
+- open an issue at: https://github.com/maxjuniorbr/volume-for-b/issues
+- include browser, extension version, and steps to reproduce
 
-Se o problema envolver áudio, informe:
+If the issue involves audio, include:
 
-- o site onde ocorreu
-- se a aba estava audível no Chrome
-- o volume configurado na extensão
-- se o problema acontece após recarregar a aba ou reiniciar o navegador
+- the website where it happened
+- whether the tab was audible in Chrome
+- the volume configured in the extension
+- whether the issue still happens after reloading the tab or restarting the browser
 
-Se o assunto envolver falha de segurança ou exposição de dados, não use issue pública. Consulte [SECURITY.md](SECURITY.md).
+If the issue is related to security or data exposure, do not use a public issue. See [SECURITY.md](SECURITY.md).
