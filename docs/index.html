@@ -19,19 +19,19 @@
   <link rel="icon" type="image/png" href="./volume-for-b.png">
   <script>
     (function() {
-      var savedTheme = null;
-      try {
-        savedTheme = localStorage.getItem('vfb-theme');
-      } catch (error) {
-        savedTheme = null;
+      function getSystemTheme() {
+        return globalThis.matchMedia && globalThis.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
       }
 
-      var theme = savedTheme;
-      if (!theme) {
-        theme = globalThis.matchMedia && globalThis.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      function getInitialTheme() {
+        try {
+          return localStorage.getItem('vfb-theme') || getSystemTheme();
+        } catch {
+          return getSystemTheme();
+        }
       }
 
-      document.documentElement.dataset.theme = theme;
+      document.documentElement.dataset.theme = getInitialTheme();
     }());
   </script>
   <style>
