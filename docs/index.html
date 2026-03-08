@@ -8,1030 +8,1039 @@
   <meta property="og:title" content="Volume for B | More volume per browser tab">
   <meta property="og:description" content="More volume for quiet tabs, with per-tab control, local processing, and privacy-first behavior.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://maxjuniorbr.github.io/volume-for-b/">
+  <meta property="og:image" content="https://maxjuniorbr.github.io/volume-for-b/screenshot-popup-ui.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Volume for B | More volume per browser tab">
+  <meta name="twitter:description" content="Boost videos, lessons, and calls in Chrome tabs up to 600%, with per-tab control and local processing.">
+  <meta name="twitter:image" content="https://maxjuniorbr.github.io/volume-for-b/screenshot-popup-ui.png">
+  <meta name="theme-color" content="#0c0c0f">
+  <link rel="canonical" href="https://maxjuniorbr.github.io/volume-for-b/">
   <link rel="icon" type="image/png" href="./volume-for-b.png">
-  <script>document.documentElement.dataset.js = 'on';</script>
   <style>
-    html[data-js='on'] body[data-ready='false'] {
-      visibility: hidden;
-    }
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── Fonts ── */
+    @font-face {
+      font-family: 'Space Grotesk';
+      font-style: normal;
+      font-weight: 400 700;
+      font-display: swap;
+      src: url('./fonts/space-grotesk-latin.woff2') format('woff2');
+    }
     @font-face {
       font-family: 'JetBrains Mono';
       font-style: normal;
-      font-weight: 400;
+      font-weight: 400 700;
       font-display: swap;
       src: url('./fonts/jetbrains-mono-latin.woff2') format('woff2');
     }
 
-    @font-face {
-      font-family: 'JetBrains Mono';
-      font-style: normal;
-      font-weight: 700;
-      font-display: swap;
-      src: url('./fonts/jetbrains-mono-latin.woff2') format('woff2');
-    }
-
-    @font-face {
-      font-family: 'Space Grotesk';
-      font-style: normal;
-      font-weight: 400;
-      font-display: swap;
-      src: url('./fonts/space-grotesk-latin.woff2') format('woff2');
-    }
-
-    @font-face {
-      font-family: 'Space Grotesk';
-      font-style: normal;
-      font-weight: 500;
-      font-display: swap;
-      src: url('./fonts/space-grotesk-latin.woff2') format('woff2');
-    }
-
-    @font-face {
-      font-family: 'Space Grotesk';
-      font-style: normal;
-      font-weight: 700;
-      font-display: swap;
-      src: url('./fonts/space-grotesk-latin.woff2') format('woff2');
-    }
-
+    /* ── Custom properties: dark (default) ── */
     :root {
-      color-scheme: dark;
-      --bg: #040507;
-      --surface: rgba(12, 14, 19, 0.84);
-      --surface-strong: #0d1016;
-      --surface-soft: rgba(18, 21, 28, 0.72);
-      --border: rgba(255, 255, 255, 0.08);
-      --text: #f4f7fb;
-      --muted: #9aa3b2;
+      --font-body: 'Space Grotesk', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      --bg: #0c0c0f;
+      --bg-raised: #16161b;
+      --bg-card: #1c1c23;
+      --border: #2a2a35;
+      --border-hover: #3d3d4d;
+      --text: #e8e8ec;
+      --text-mid: #a0a0b0;
+      --text-dim: #6a6a7a;
       --accent: #d9ff3f;
-      --accent-soft: rgba(217, 255, 63, 0.16);
-      --accent-glow: rgba(217, 255, 63, 0.22);
-      --secondary: #72f7d4;
-      --shadow: 0 30px 90px rgba(0, 0, 0, 0.35);
-      --radius-xl: 28px;
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --content-width: 1180px;
-      --transition: 220ms ease;
-      --font-display: 'Space Grotesk', sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --accent-dim: rgba(217, 255, 63, 0.12);
+      --accent-glow: rgba(217, 255, 63, 0.06);
+      --focus-ring: rgba(217, 255, 63, 0.5);
+      --nav-bg: rgba(22, 22, 27, 0.76);
+      --grid-line: rgba(255, 255, 255, 0.04);
+      --orb-a: rgba(217, 255, 63, 0.18);
+      --orb-b: rgba(95, 140, 255, 0.15);
+      --shadow: 0 2px 12px rgba(0,0,0,0.4);
+
+      --space-xs: 0.5rem;
+      --space-sm: 0.75rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.5rem;
+      --space-2xl: 4rem;
+      --space-3xl: 6rem;
+
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-pill: 100px;
+      --max-w: 72rem;
     }
 
-    [data-theme="light"] {
-      color-scheme: light;
-      --bg: #f4f7fb;
-      --surface: rgba(255, 255, 255, 0.82);
-      --surface-strong: #ffffff;
-      --surface-soft: rgba(247, 250, 255, 0.86);
-      --border: rgba(15, 24, 38, 0.1);
-      --text: #0c1624;
-      --muted: #5b6575;
-      --accent: #547700;
-      --accent-soft: rgba(84, 119, 0, 0.14);
-      --accent-glow: rgba(84, 119, 0, 0.18);
-      --secondary: #007d67;
-      --shadow: 0 24px 70px rgba(29, 40, 61, 0.14);
+    /* ── Light theme ── */
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg: #f5f5f0;
+        --bg-raised: #eaeae5;
+        --bg-card: #ffffff;
+        --border: #d0d0c8;
+        --border-hover: #b0b0a8;
+        --text: #1a1a1f;
+        --text-mid: #55555f;
+        --text-dim: #8a8a94;
+        --accent: #2d6a00;
+        --accent-dim: rgba(45, 106, 0, 0.1);
+        --accent-glow: rgba(45, 106, 0, 0.04);
+        --focus-ring: rgba(45, 106, 0, 0.4);
+        --nav-bg: rgba(255, 255, 255, 0.72);
+        --grid-line: rgba(26, 26, 31, 0.08);
+        --orb-a: rgba(45, 106, 0, 0.14);
+        --orb-b: rgba(64, 105, 188, 0.11);
+        --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      }
     }
 
-    * {
-      box-sizing: border-box;
+    html[data-theme="light"] {
+      --bg: #f5f5f0;
+      --bg-raised: #eaeae5;
+      --bg-card: #ffffff;
+      --border: #d0d0c8;
+      --border-hover: #b0b0a8;
+      --text: #1a1a1f;
+      --text-mid: #55555f;
+      --text-dim: #8a8a94;
+      --accent: #2d6a00;
+      --accent-dim: rgba(45, 106, 0, 0.1);
+      --accent-glow: rgba(45, 106, 0, 0.04);
+      --focus-ring: rgba(45, 106, 0, 0.4);
+      --nav-bg: rgba(255, 255, 255, 0.72);
+      --grid-line: rgba(26, 26, 31, 0.08);
+      --orb-a: rgba(45, 106, 0, 0.14);
+      --orb-b: rgba(64, 105, 188, 0.11);
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
 
-    html {
-      scroll-behavior: smooth;
+    html[data-theme="dark"] {
+      --bg: #0c0c0f;
+      --bg-raised: #16161b;
+      --bg-card: #1c1c23;
+      --border: #2a2a35;
+      --border-hover: #3d3d4d;
+      --text: #e8e8ec;
+      --text-mid: #a0a0b0;
+      --text-dim: #6a6a7a;
+      --accent: #d9ff3f;
+      --accent-dim: rgba(217, 255, 63, 0.12);
+      --accent-glow: rgba(217, 255, 63, 0.06);
+      --focus-ring: rgba(217, 255, 63, 0.5);
+      --nav-bg: rgba(22, 22, 27, 0.76);
+      --grid-line: rgba(255, 255, 255, 0.04);
+      --orb-a: rgba(217, 255, 63, 0.18);
+      --orb-b: rgba(95, 140, 255, 0.15);
+      --shadow: 0 2px 12px rgba(0,0,0,0.4);
     }
 
-    section[id], header[id] {
-      scroll-margin-top: 120px;
-    }
-
+    /* ── Base ── */
+    html { scroll-behavior: smooth; }
     body {
-      margin: 0;
-      font-family: var(--font-display);
+      font-family: var(--font-body);
       background: var(--bg);
       color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
-      transition: background-color var(--transition), color var(--transition);
+      position: relative;
     }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 42px 42px;
-      mask-image: radial-gradient(circle at center, black 34%, transparent 88%);
-      opacity: 0.5;
-      z-index: 0;
-    }
-
+    body::before,
     body::after {
-      content: '';
-      position: fixed;
-      top: -18vh;
-      left: 50%;
-      width: 70vw;
-      height: 70vw;
-      transform: translateX(-50%);
-      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 68%);
-      filter: blur(80px);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .noise {
+      content: "";
       position: fixed;
       inset: 0;
       pointer-events: none;
-      opacity: 0.06;
+    }
+    body::before {
+      background:
+        radial-gradient(circle at 18% 12%, var(--orb-a), transparent 32%),
+        radial-gradient(circle at 82% 0%, var(--orb-b), transparent 28%);
+      filter: blur(20px);
+      opacity: 0.95;
       z-index: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+    body::after {
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at center, black 24%, transparent 84%);
+      opacity: 0.7;
+      z-index: 0;
+    }
+    .mono { font-family: var(--font-mono); }
+    img { display: block; max-width: 100%; height: auto; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    section[id], header[id] { scroll-margin-top: 6rem; }
+
+    /* ── Focus ── */
+    :focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 3px;
+      border-radius: 4px;
     }
 
+    /* ── Skip link ── */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: var(--space-md);
+      background: var(--accent);
+      color: var(--bg);
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      z-index: 100;
+    }
+    .skip-link:focus { top: var(--space-md); }
+
+    /* ── Layout ── */
     .page {
       position: relative;
       z-index: 1;
-      max-width: var(--content-width);
+      max-width: var(--max-w);
       margin: 0 auto;
-      padding: 24px 20px 72px;
+      padding: 0 clamp(1rem, 4vw, 2.5rem);
     }
 
-    .panel {
-      background: var(--surface);
+    /* ── Nav ── */
+    .nav {
+      position: sticky;
+      top: 0.9rem;
+      z-index: 20;
+      margin-top: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1rem;
+      gap: var(--space-md);
       border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
-      border-radius: var(--radius-xl);
+      border-radius: var(--radius-pill);
+      background: var(--nav-bg);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.05rem;
+      white-space: nowrap;
+    }
+    .nav-brand img { width: 32px; height: 32px; border-radius: 6px; }
+    .nav-brand:hover { text-decoration: none; }
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .lang-btn, .theme-btn {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      background: var(--bg-raised);
+      color: var(--text-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 0.3rem 0.7rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .lang-btn:hover, .theme-btn:hover {
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+    .theme-btn { padding: 0.3rem 0.55rem; font-size: 0.95rem; }
+
+    /* ── Hero ── */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(20rem, 1.05fr);
+      gap: clamp(2rem, 5vw, 4.5rem);
+      align-items: center;
+      padding: clamp(3rem, 10vw, 6rem) 0 var(--space-2xl);
+    }
+    .hero-copy { position: relative; z-index: 2; }
+    .hero-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 0.3rem 0.8rem;
+      border-radius: var(--radius-pill);
+      margin-bottom: var(--space-md);
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-md);
+    }
+    .hero-lead {
+      font-size: clamp(1rem, 1.8vw, 1.15rem);
+      color: var(--text-mid);
+      max-width: 38ch;
+      margin-bottom: var(--space-lg);
+    }
+    .hero-actions {
+      display: flex;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-lg);
+    }
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+    .hero-chip {
+      min-height: 100%;
+      padding: 0.95rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), transparent 65%),
+        var(--bg-card);
+      box-shadow: 0 18px 35px rgba(0, 0, 0, 0.16);
+    }
+    .hero-chip strong {
+      display: block;
+      font-size: 0.9rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.3rem;
+    }
+    .hero-chip span {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-mid);
+      line-height: 1.45;
+    }
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 0.65rem 1.3rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      text-decoration: none;
+    }
+    .btn:hover { transform: translateY(-1px); text-decoration: none; }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-mid);
+    }
+    .btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      min-height: 33rem;
+    }
+    .hero-stage {
+      position: relative;
+      width: min(100%, 37rem);
+      aspect-ratio: 1 / 1.06;
+    }
+    .hero-stage::before,
+    .hero-stage::after {
+      content: "";
+      position: absolute;
+      border-radius: 2rem;
+      pointer-events: none;
+    }
+    .hero-stage::before {
+      inset: 10% 8% 6% 16%;
+      background: radial-gradient(circle, var(--accent-glow), transparent 68%);
+      filter: blur(12px);
+      opacity: 0.95;
+    }
+    .hero-stage::after {
+      inset: 4% 2% 14% 18%;
+      border: 1px solid var(--grid-line);
+    }
+    .hero-card {
+      position: absolute;
+      margin: 0;
+      overflow: hidden;
+      border-radius: calc(var(--radius) + 6px);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.24);
+    }
+    .hero-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .hero-card-main {
+      --float-rotate-start: -4deg;
+      --float-rotate-end: -2deg;
+      inset: 12% 15% 12% 4%;
+      z-index: 3;
+      transform: rotate(-4deg);
+      animation: hero-float 9s ease-in-out infinite;
+    }
+    .hero-card-side {
+      --float-rotate-start: 7deg;
+      --float-rotate-end: 9deg;
+      right: 2%;
+      bottom: 5%;
+      width: 44%;
+      aspect-ratio: 1 / 1;
+      z-index: 2;
+      transform: rotate(7deg);
+      animation: hero-float 11s ease-in-out infinite reverse;
+    }
+    .hero-note {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 4;
+      width: min(15rem, 42%);
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 10px);
+      background: var(--nav-bg);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 22px 45px rgba(0, 0, 0, 0.2);
+      animation: hero-bob 7s ease-in-out infinite;
+    }
+    .hero-note-value {
+      display: block;
+      font-size: clamp(1.9rem, 5vw, 2.75rem);
+      font-weight: 700;
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      color: var(--accent);
+      margin-bottom: 0.55rem;
+    }
+    .hero-note-line {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text-mid);
+      line-height: 1.45;
+      margin-bottom: 0.8rem;
+    }
+    .hero-mini-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .hero-mini-chip {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text);
+      background: var(--accent-dim);
+      border-radius: var(--radius-pill);
+      padding: 0.28rem 0.55rem;
+    }
+    @keyframes hero-float {
+      0%, 100% { transform: translateY(0) rotate(var(--float-rotate-start)); }
+      50% { transform: translateY(-10px) rotate(var(--float-rotate-end)); }
+    }
+    @keyframes hero-bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
 
-    .mono {
+    /* ── Stats strip ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+      padding: var(--space-xl) 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      list-style: none;
+    }
+    .stat { text-align: center; }
+    .stat-value {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.2;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-top: 0.2rem;
+    }
+
+    /* ── Sections ── */
+    .section {
+      padding: var(--space-3xl) 0 var(--space-2xl);
+    }
+    .section-header {
+      margin-bottom: var(--space-xl);
+      max-width: 46ch;
+    }
+    .section-kicker {
       font-family: var(--font-mono);
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: var(--space-xs);
+    }
+    .section-title {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+      margin-bottom: var(--space-sm);
+    }
+    .section-lead {
+      font-size: 0.95rem;
+      color: var(--text-mid);
     }
 
+    /* ── Card grid ── */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-lg);
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border-hover); }
+    .card-num {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent);
+      margin-bottom: var(--space-xs);
+    }
+    .card h3 {
+      font-size: 1.05rem;
+      margin-bottom: var(--space-xs);
+    }
+    .card p {
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      line-height: 1.55;
+    }
+
+    /* ── Features grid ── */
+    .grid-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+    .feature {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-lg);
+      transition: border-color 0.2s;
+    }
+    .feature:hover { border-color: var(--border-hover); }
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: var(--space-sm);
+      line-height: 1;
+    }
+    .feature h3 {
+      font-size: 0.95rem;
+      margin-bottom: 0.3rem;
+    }
+    .feature p {
+      font-size: 0.85rem;
+      color: var(--text-mid);
+      line-height: 1.5;
+    }
+
+    /* ── Screenshot showcase ── */
+    .showcase {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: var(--space-md);
+      padding: var(--space-xl) 0;
+    }
+    .showcase-panel {
+      margin: 0;
+      padding: 0.85rem;
+      border-radius: calc(var(--radius) + 10px);
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.04), transparent 70%),
+        var(--bg-card);
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+    }
+    .showcase-panel img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--radius);
+    }
+    .showcase-panel-secondary {
+      align-self: center;
+    }
+
+    /* ── Steps ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+      gap: var(--space-md);
+      counter-reset: step;
+    }
+    .step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-lg);
+      counter-increment: step;
+    }
+    .step::before {
+      content: counter(step);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-dim);
+      width: 1.8rem;
+      height: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      margin-bottom: var(--space-sm);
+    }
+    .step p {
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      line-height: 1.55;
+    }
+
+    /* ── Privacy ── */
+    .privacy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+    .callout {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-lg);
+    }
+    .callout h3 { margin-bottom: var(--space-sm); font-size: 1.05rem; }
+    .callout p { font-size: 0.9rem; color: var(--text-mid); line-height: 1.55; }
+    .callout ul {
+      list-style: none;
+      margin-top: var(--space-sm);
+    }
+    .callout li {
+      font-size: 0.85rem;
+      color: var(--text-mid);
+      padding: 0.35rem 0;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.5;
+    }
+    .callout li:last-child { border-bottom: none; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: var(--space-sm); }
+    .chip {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      background: var(--accent-dim);
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--radius-pill);
+    }
+
+    /* ── FAQ ── */
+    .faq-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+    .faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-lg);
+    }
+    .faq-item h3 { font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .faq-item p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.55; }
+
+    /* ── Footer ── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: var(--space-xl) 0 var(--space-2xl);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+      gap: var(--space-xl);
+      margin-top: var(--space-2xl);
+    }
+    .footer h3 { font-size: 0.95rem; margin-bottom: var(--space-xs); }
+    .footer p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.55; }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      margin-top: var(--space-sm);
+    }
+    .footer-link {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      transition: color 0.2s;
+    }
+    .footer-link:hover { color: var(--accent); }
+
+    /* ── Reveal animation ── */
     .reveal {
       opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
     }
-
-    .reveal.active {
+    .reveal.visible {
       opacity: 1;
       transform: translateY(0);
     }
 
-    nav {
-      position: sticky;
-      top: 16px;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 16px 20px;
-      margin-bottom: 22px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      min-width: 0;
-    }
-
-    .brand-mark {
-      width: 48px;
-      height: 48px;
-      flex: 0 0 auto;
-    }
-
-    .brand-mark img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .brand-copy strong {
-      display: block;
-      font-size: 1.1rem;
-      line-height: 1;
-    }
-
-    .brand-copy span {
-      display: block;
-      color: var(--muted);
-      font-size: 0.84rem;
-      margin-top: 5px;
-    }
-
-    .nav-links,
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .nav-link,
-    .lang-select,
-    .theme-toggle,
-    .button,
-    .button-secondary,
-    .footer-link {
-      border: 1px solid var(--border);
-      background: var(--surface-strong);
-      border-radius: 999px;
-      color: var(--text);
-      font: inherit;
-      transition: transform var(--transition), border-color var(--transition), background-color var(--transition), color var(--transition), box-shadow var(--transition);
-    }
-
-    .nav-link,
-    .button,
-    .button-secondary,
-    .footer-link {
-      padding: 12px 16px;
-    }
-
-    .lang-select,
-    .theme-toggle {
-      height: 42px;
-    }
-
-    .lang-select {
-      padding: 0 12px;
-      cursor: pointer;
-    }
-
-    .theme-toggle {
-      width: 42px;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-    }
-
-    .nav-link:hover,
-    .button:hover,
-    .button-secondary:hover,
-    .lang-select:hover,
-    .theme-toggle:hover,
-    .footer-link:hover {
-      transform: translateY(-1px);
-      border-color: rgba(217, 255, 63, 0.32);
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: var(--text);
-      color: var(--bg);
-      border-color: transparent;
-      font-weight: 700;
-      box-shadow: 0 0 24px rgba(217, 255, 63, 0.12);
-    }
-
-    .button:hover {
-      background: var(--accent);
-      color: #060608;
-      box-shadow: 0 0 30px var(--accent-glow);
-    }
-
-    .button-secondary {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      background: transparent;
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .hero {
-      min-height: calc(100vh - 120px);
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-      gap: 22px;
-      padding: 28px;
-      align-items: stretch;
-    }
-
-    .hero-copy,
-    .hero-side {
-      background: var(--surface-soft);
-      border: 1px solid var(--border);
-      border-radius: calc(var(--radius-xl) - 8px);
-      padding: 28px;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--accent);
-      font-size: 0.78rem;
-    }
-
-    .hero-badge::before {
-      content: '';
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 12px currentColor;
-    }
-
-    h1,
-    h2,
-    h3 {
-      margin: 0;
-      line-height: 1.02;
-      letter-spacing: -0.05em;
-    }
-
-    .hero h1 {
-      margin-top: 20px;
-      font-size: clamp(3rem, 7vw, 6.2rem);
-      max-width: 10.5ch;
-    }
-
-    .hero-lead {
-      margin-top: 18px;
-      max-width: 62ch;
-      font-size: 1.1rem;
-      line-height: 1.7;
-      color: var(--muted);
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 28px;
-    }
-
-    .hero-stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 28px;
-    }
-
-    .stat {
-      padding: 16px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .stat strong {
-      display: block;
-      font-size: 1.6rem;
-      letter-spacing: -0.06em;
-    }
-
-    .stat span {
-      display: block;
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.45;
-    }
-
-    .hero-side {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 18px;
-    }
-
-    .eyebrow {
-      color: var(--muted);
-      font-size: 0.74rem;
-      margin-bottom: 12px;
-    }
-
-    .side-block,
-    .callout,
-    .card,
-    .faq-item,
-    .footer-block,
-    .step-card {
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: var(--radius-lg);
-      padding: 22px;
-    }
-
-    .side-list,
-    .simple-list {
-      margin: 0;
-      padding-left: 18px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .side-list li,
-    .simple-list li {
-      margin-bottom: 10px;
-    }
-
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .chip {
-      padding: 9px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--accent-soft);
-      color: var(--text);
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    section {
-      margin-top: 22px;
-      padding: 28px;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 18px;
-      margin-bottom: 22px;
-      padding-bottom: 18px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .section-header p {
-      margin: 0;
-      max-width: 58ch;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .section-kicker {
-      margin: 0 0 10px;
-      color: var(--accent);
-      font-size: 0.78rem;
-    }
-
-    .section-title {
-      font-size: clamp(2rem, 4.6vw, 4rem);
-      max-width: 14ch;
-    }
-
-    .grid-3,
-    .grid-4,
-    .faq-grid,
-    .split-grid,
-    .steps,
-    .footer-grid {
-      display: grid;
-      gap: 16px;
-    }
-
-    .grid-3 {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .grid-4 {
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
-
-    .faq-grid,
-    .split-grid,
-    .footer-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .steps {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .card-icon,
-    .step-number {
-      display: inline-grid;
-      place-items: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: var(--surface-strong);
-      color: var(--accent);
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
-      margin-bottom: 16px;
-    }
-
-    .card h3,
-    .faq-item h3,
-    .callout h3,
-    .footer-block h3 {
-      font-size: 1.28rem;
-      margin-bottom: 12px;
-    }
-
-    .card p,
-    .faq-item p,
-    .callout p,
-    .footer-block p,
-    .step-card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .step-number {
-      width: auto;
-      min-width: 48px;
-      padding: 0 14px;
-      border-radius: 999px;
-    }
-
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    @media (max-width: 1080px) {
-      .hero,
-      .grid-4,
-      .steps,
-      .grid-3,
-      .faq-grid,
-      .split-grid,
-      .footer-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .nav {
+        top: 0.55rem;
+        padding: 0.7rem 0.85rem;
+        border-radius: 1rem;
       }
-
-      .hero h1,
-      .section-title {
-        max-width: none;
-      }
-
-      .nav-links {
-        display: none;
-      }
-    }
-
-    @media (max-width: 720px) {
-      .page {
-        padding: 14px 14px 54px;
-      }
-
-      nav,
-      .hero,
-      section {
-        padding: 18px;
-      }
-
-      nav,
-      .hero,
-      .hero-stats,
-      .grid-3,
-      .grid-4,
-      .faq-grid,
-      .split-grid,
-      .steps,
-      .footer-grid,
-      .section-header {
-        grid-template-columns: 1fr;
-        flex-direction: column;
-      }
-
-      .nav-actions {
-        width: 100%;
-        justify-content: space-between;
-      }
-
       .hero {
-        min-height: auto;
+        grid-template-columns: 1fr;
+        gap: var(--space-xl);
+        padding: var(--space-xl) 0;
       }
+      .hero-visual { order: -1; }
+      .hero-visual {
+        min-height: 23rem;
+        width: 100%;
+      }
+      .hero-stage {
+        width: min(100%, 28rem);
+        min-height: 23rem;
+      }
+      .hero-card-main { inset: 14% 11% 14% 2%; }
+      .hero-card-side { width: 46%; right: 1%; }
+      .hero-note {
+        width: min(14rem, 54%);
+        padding: 0.85rem;
+      }
+      .hero-meta { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; gap: var(--space-sm); }
+      .stat { text-align: left; display: flex; align-items: baseline; gap: var(--space-sm); }
+      .stat-value { font-size: 1.3rem; }
+      .showcase { grid-template-columns: 1fr; }
+      .nav-brand span:last-child { display: none; }
+    }
 
-      .hero-copy,
-      .hero-side,
-      .card,
-      .faq-item,
-      .callout,
-      .footer-block,
-      .step-card {
-        padding: 18px;
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 1.5rem; }
+      .section { padding: var(--space-2xl) 0 var(--space-xl); }
+      .hero-visual { min-height: 20rem; }
+      .hero-stage { min-height: 20rem; }
+      .hero-card-main { inset: 16% 6% 16% 0; }
+      .hero-card-side { width: 52%; bottom: 4%; }
+      .hero-note {
+        width: 58%;
+        padding: 0.75rem;
       }
+      .hero-note-line { display: none; }
+      .showcase-panel { padding: 0.55rem; }
+    }
 
-      .hero h1 {
-        font-size: clamp(2.5rem, 14vw, 4rem);
-      }
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { transition: none; opacity: 1; transform: none; }
+      html { scroll-behavior: auto; }
+      .hero-card-main,
+      .hero-card-side,
+      .hero-note { animation: none; }
     }
   </style>
 </head>
-<body data-ready="false">
-  <div class="noise"></div>
+
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
 
   <div class="page">
-    <nav class="panel reveal">
-      <a class="brand" href="https://chromewebstore.google.com/detail/volume-for-b/hpgpcipagldgjpdngfmmnfojieaiebpj" target="_blank" rel="noreferrer">
-        <span class="brand-mark">
-          <img src="./volume-for-b.png" alt="" width="48" height="48">
-        </span>
-        <span class="brand-copy">
-          <strong>Volume for B</strong>
-          <span data-i18n="brand-subtitle">more volume for tabs with audio</span>
-        </span>
+    <nav class="nav reveal" aria-label="Main navigation">
+      <a class="nav-brand" href="https://chromewebstore.google.com/detail/volume-for-b/hpgpcipagldgjpdngfmmnfojieaiebpj" target="_blank" rel="noreferrer">
+        <img src="./volume-for-b.png" alt="" width="32" height="32">
+        <span>Volume for B</span>
       </a>
-
-      <div class="nav-links mono">
-        <a class="nav-link" href="#what" data-i18n="nav-what">what it does</a>
-        <a class="nav-link" href="#how" data-i18n="nav-how">how to use</a>
-        <a class="nav-link" href="#privacy" data-i18n="nav-privacy">privacy</a>
-        <a class="nav-link" href="#faq" data-i18n="nav-faq">faq</a>
-      </div>
-
-      <div class="nav-actions">
-        <select class="lang-select mono" id="langSelect" aria-label="Select language">
-          <option value="en">EN</option>
-          <option value="pt-BR">PT-BR</option>
-          <option value="es">ES</option>
-        </select>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☀</button>
+      <div class="nav-controls">
+        <button class="lang-btn" id="langToggle" type="button" aria-label="Change language">EN</button>
+        <button class="theme-btn" id="themeToggle" type="button" aria-label="Toggle color theme">
+          <span aria-hidden="true" id="themeIcon">&#9790;</span>
+        </button>
       </div>
     </nav>
 
-    <header class="hero panel reveal" id="top">
-      <div class="hero-copy">
-        <span class="hero-badge mono" data-i18n="hero-badge">chrome extension for per-tab audio</span>
-        <h1 data-i18n="hero-title">When a video is too quiet, the tab gets a boost.</h1>
-        <p class="hero-lead" data-i18n="hero-lead">Boost tab audio up to 600%. Per-tab control, local processing, and privacy-first behavior.</p>
-
-        <div class="hero-actions">
-          <a class="button mono" href="#how" data-i18n="hero-primary">learn how to use it</a>
-          <a class="button-secondary mono" href="https://github.com/maxjuniorbr/volume-for-b" target="_blank" rel="noreferrer" data-i18n="hero-secondary">view repository</a>
-        </div>
-
-        <div class="hero-stats">
-          <div class="stat">
-            <strong>600%</strong>
-            <span data-i18n="stat-1">maximum gain for tabs with audio</span>
+    <main id="main">
+      <header class="hero reveal">
+        <div class="hero-copy">
+          <span class="hero-badge" data-i18n="hero-badge">chrome extension for per-tab audio</span>
+          <h1 data-i18n="hero-title">When the video is too quiet, the tab gets a boost.</h1>
+          <p class="hero-lead" data-i18n="hero-lead">Boost tab volume up to 600%. Individual control, local processing, and privacy-focused.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/volume-for-b/hpgpcipagldgjpdngfmmnfojieaiebpj" target="_blank" rel="noreferrer" data-i18n="hero-cta">Install from Chrome Web Store</a>
+            <a class="btn btn-secondary" href="https://github.com/maxjuniorbr/volume-for-b" target="_blank" rel="noreferrer" data-i18n="hero-repo">Repository</a>
           </div>
-          <div class="stat">
-            <strong data-i18n="stat-2-title">local</strong>
-            <span data-i18n="stat-2">processing in the browser, with no external server</span>
-          </div>
-          <div class="stat">
-            <strong data-i18n="stat-3-title">per tab</strong>
-            <span data-i18n="stat-3">individual control, mute, reset, and domain memory</span>
-          </div>
-        </div>
-      </div>
-
-      <aside class="hero-side">
-        <div class="side-block">
-          <p class="eyebrow mono" data-i18n="side-kicker">in plain language</p>
-          <ul class="side-list">
-            <li data-i18n="side-1">It helps when YouTube, Spotify, lessons, calls, or web players are too quiet.</li>
-            <li data-i18n="side-2">It does not change the computer's overall volume. Control happens on the selected tab.</li>
-            <li data-i18n="side-3">It is not a magic equalizer: it increases gain, it does not repair poor audio.</li>
-          </ul>
-        </div>
-
-        <div class="side-block">
-          <p class="eyebrow mono" data-i18n="side-badges">summary</p>
-          <div class="chip-row">
-            <span class="chip" data-i18n="chip-1">no ads</span>
-            <span class="chip" data-i18n="chip-2">no data collection</span>
-            <span class="chip" data-i18n="chip-3">open source</span>
+          <div class="hero-meta">
+            <article class="hero-chip">
+              <strong>600%</strong>
+              <span data-i18n="stat-1">maximum gain for tabs with audio</span>
+            </article>
+            <article class="hero-chip">
+              <strong data-i18n="stat-3-value">per tab</strong>
+              <span data-i18n="stat-3">individual control, mute, reset, and domain memory</span>
+            </article>
+            <article class="hero-chip">
+              <strong data-i18n="stat-2-value">local</strong>
+              <span data-i18n="stat-2">processing in the browser, no external server</span>
+            </article>
           </div>
         </div>
-      </aside>
-    </header>
-
-    <section class="panel reveal" id="what">
-      <div class="section-header">
-        <div>
-          <p class="section-kicker mono" data-i18n="what-kicker">o que a extensao realmente faz</p>
-          <h2 class="section-title" data-i18n="what-title">Explicar rapido. Sem prometer mais do que ela entrega.</h2>
-        </div>
-        <p data-i18n="what-lead">Entenda o problema, a solucao e a privacidade. Detalhes tecnicos estao no repositorio.</p>
-      </div>
-
-      <div class="grid-3">
-        <article class="card">
-          <div class="card-icon">01</div>
-          <h3 data-i18n="what-card-1-title">O que resolve</h3>
-          <p data-i18n="what-card-1-desc">Quando o audio de uma aba esta baixo mesmo com o volume normal do navegador e do sistema ja alto.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">02</div>
-          <h3 data-i18n="what-card-2-title">Como resolve</h3>
-          <p data-i18n="what-card-2-desc">Captura o audio da aba, aplica ganho localmente e permite ajustar o volume entre 0% e 600%.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">03</div>
-          <h3 data-i18n="what-card-3-title">Onde o escopo termina</h3>
-          <p data-i18n="what-card-3-desc">Nao controla aplicativos fora do navegador, nao melhora automaticamente mixagem ruim e nao substitui hardware.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="panel reveal">
-      <div class="section-header">
-        <div>
-          <p class="section-kicker mono" data-i18n="features-kicker">o que voce encontra</p>
-          <h2 class="section-title" data-i18n="features-title">Tudo foi feito para ajustar audio de forma objetiva.</h2>
-        </div>
-        <p data-i18n="features-lead">Sem curva de aprendizado. Identifique a aba, inicie o controle e ajuste o ganho.</p>
-      </div>
-
-      <div class="grid-4">
-        <article class="card">
-          <div class="card-icon">🔊</div>
-          <h3 data-i18n="feature-1-title">Boost de 0% a 600%</h3>
-          <p data-i18n="feature-1-desc">Voce pode reduzir, manter em 100% ou aumentar bastante o volume conforme a necessidade.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">🗂</div>
-          <h3 data-i18n="feature-2-title">Lista de abas com audio</h3>
-          <p data-i18n="feature-2-desc">A extensao mostra quais abas estao emitindo som para voce escolher a certa.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">🎚</div>
-          <h3 data-i18n="feature-3-title">Mute, reset e parada</h3>
-          <p data-i18n="feature-3-desc">Da para mutar a aba, voltar para 100% ou parar o controle sem recarregar a pagina.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">🌐</div>
-          <h3 data-i18n="feature-4-title">Memoria por dominio</h3>
-          <p data-i18n="feature-4-desc">Se um site sempre precisa de mais ganho, a extensao pode guardar essa preferencia.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">🎧</div>
-          <h3 data-i18n="feature-5-title">Reunioes simultaneas</h3>
-          <p data-i18n="feature-5-desc">Participe de duas chamadas. Reduza o volume de uma para ouvir a outra.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="panel reveal" id="how">
-      <div class="section-header">
-        <div>
-          <p class="section-kicker mono" data-i18n="how-kicker">como usar</p>
-          <h2 class="section-title" data-i18n="how-title">Quatro passos e acabou.</h2>
-        </div>
-        <p data-i18n="how-lead">A ideia e que qualquer pessoa entenda o caminho de uso sem precisar abrir README ou documentacao tecnica.</p>
-      </div>
-
-      <div class="steps">
-        <article class="step-card">
-          <div class="step-number">1</div>
-          <p data-i18n="step-1">Abra uma aba com audio, como YouTube, Spotify, uma chamada ou uma aula online.</p>
-        </article>
-
-        <article class="step-card">
-          <div class="step-number">2</div>
-          <p data-i18n="step-2">Clique no icone da extensao e selecione a aba que esta reproduzindo audio.</p>
-        </article>
-
-        <article class="step-card">
-          <div class="step-number">3</div>
-          <p data-i18n="step-3">Clique em iniciar e ajuste o slider para definir o ganho desejado.</p>
-        </article>
-
-        <article class="step-card">
-          <div class="step-number">4</div>
-          <p data-i18n="step-4">Se quiser, use mute, reset ou deixe a extensao lembrar o ganho daquele dominio.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="panel reveal" id="privacy">
-      <div class="section-header">
-        <div>
-          <p class="section-kicker mono" data-i18n="privacy-kicker">privacidade e permissoes</p>
-          <h2 class="section-title" data-i18n="privacy-title">O que ela acessa e por que isso existe.</h2>
-        </div>
-        <p data-i18n="privacy-lead">Como a extensao trabalha com audio de abas, essa parte precisa ser clara para quem for instalar e usar.</p>
-      </div>
-
-      <div class="split-grid">
-        <article class="callout">
-          <h3 data-i18n="privacy-callout-title">Processamento local</h3>
-          <p data-i18n="privacy-callout-desc">O audio e tratado dentro do navegador. O projeto declara que nao envia audio para servidores externos, nao usa analytics, nao usa trackers e nao vende dados.</p>
-          <div class="chip-row">
-            <span class="chip">tabs</span>
-            <span class="chip">tabCapture</span>
-            <span class="chip">offscreen</span>
-            <span class="chip">storage</span>
+        <div class="hero-visual">
+          <div class="hero-stage">
+            <figure class="hero-card hero-card-main">
+              <img src="./screenshot-popup-ui.png" alt="Volume for B extension popup showing volume slider, tab list, and control buttons" width="520" height="520" loading="eager" data-i18n-alt="hero-img-alt">
+            </figure>
+            <div class="hero-note" aria-hidden="true">
+              <span class="hero-note-value">600%</span>
+              <span class="hero-note-line" data-i18n="stat-1">maximum gain for tabs with audio</span>
+              <div class="hero-mini-row">
+                <span class="hero-mini-chip" data-i18n="stat-3-value">per tab</span>
+                <span class="hero-mini-chip" data-i18n="stat-2-value">local</span>
+              </div>
+            </div>
+            <figure class="hero-card hero-card-side" aria-hidden="true">
+              <img src="./screenshot-tab-control.png" alt="" width="320" height="320" loading="lazy">
+            </figure>
           </div>
-        </article>
-
-        <article class="callout">
-          <h3 data-i18n="permissions-title">Permissoes em linguagem normal</h3>
-          <ul class="simple-list">
-            <li data-i18n="permission-1">tabs: localizar abas abertas e identificar quais estao com audio.</li>
-            <li data-i18n="permission-2">tabCapture: acessar o audio da aba para aplicar ganho localmente.</li>
-            <li data-i18n="permission-3">offscreen: processar audio sem precisar de uma pagina visivel.</li>
-            <li data-i18n="permission-4">storage: salvar tema e preferencias, incluindo ganho por dominio.</li>
-          </ul>
-        </article>
-      </div>
-    </section>
-
-    <section class="panel reveal" id="faq">
-      <div class="section-header">
-        <div>
-          <p class="section-kicker mono" data-i18n="faq-kicker">faq</p>
-          <h2 class="section-title" data-i18n="faq-title">Duvidas comuns de quem chegou agora.</h2>
         </div>
-        <p data-i18n="faq-lead">Essas respostas existem para evitar que o usuario final tenha que adivinhar o comportamento da extensao.</p>
+      </header>
+
+      <ul class="stats reveal" aria-label="Key metrics">
+        <li class="stat">
+          <span class="stat-value">600%</span>
+          <span class="stat-label" data-i18n="stat-1">maximum gain for tabs with audio</span>
+        </li>
+        <li class="stat">
+          <span class="stat-value" data-i18n="stat-2-value">local</span>
+          <span class="stat-label" data-i18n="stat-2">processing in the browser, no external server</span>
+        </li>
+        <li class="stat">
+          <span class="stat-value" data-i18n="stat-3-value">per tab</span>
+          <span class="stat-label" data-i18n="stat-3">individual control, mute, reset, and domain memory</span>
+        </li>
+      </ul>
+
+      <section class="section reveal" id="what" aria-labelledby="what-title">
+        <div class="section-header">
+          <p class="section-kicker" data-i18n="what-kicker">what the extension really does</p>
+          <h2 class="section-title" id="what-title" data-i18n="what-title-text">Explain it fast. Do not promise more than it delivers.</h2>
+          <p class="section-lead" data-i18n="what-lead">Understand the problem, solution, and privacy. Technical details are in the repository.</p>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <div class="card-num" aria-hidden="true">01</div>
+            <h3 data-i18n="what-card-1-title">What it solves</h3>
+            <p data-i18n="what-card-1-desc">When tab audio is too quiet even though browser and system volume are already high.</p>
+          </article>
+          <article class="card">
+            <div class="card-num" aria-hidden="true">02</div>
+            <h3 data-i18n="what-card-2-title">How it solves it</h3>
+            <p data-i18n="what-card-2-desc">It captures tab audio, applies local gain, and lets you set volume between 0% and 600%.</p>
+          </article>
+          <article class="card">
+            <div class="card-num" aria-hidden="true">03</div>
+            <h3 data-i18n="what-card-3-title">Where the scope ends</h3>
+            <p data-i18n="what-card-3-desc">It does not control apps outside the browser, does not automatically improve bad mixing, and does not replace hardware.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section reveal" aria-labelledby="features-title">
+        <div class="section-header">
+          <p class="section-kicker" data-i18n="features-kicker">what you get</p>
+          <h2 class="section-title" id="features-title" data-i18n="features-title-text">Everything is built to adjust audio without friction.</h2>
+          <p class="section-lead" data-i18n="features-lead">No learning curve. Identify the tab, start control, and adjust gain.</p>
+        </div>
+        <div class="grid-features">
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#128266;</div>
+            <h3 data-i18n="feature-1-title">0% to 600% boost</h3>
+            <p data-i18n="feature-1-desc">You can reduce, keep at 100%, or significantly increase volume as needed.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#128196;</div>
+            <h3 data-i18n="feature-2-title">List of tabs with audio</h3>
+            <p data-i18n="feature-2-desc">The extension shows which tabs are producing sound so you can choose the right one.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#127899;</div>
+            <h3 data-i18n="feature-3-title">Mute, reset, and stop</h3>
+            <p data-i18n="feature-3-desc">You can mute the tab, go back to 100%, or stop control without reloading the page.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#127760;</div>
+            <h3 data-i18n="feature-4-title">Domain memory</h3>
+            <p data-i18n="feature-4-desc">If a site always needs extra gain, the extension can save that preference.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#127911;</div>
+            <h3 data-i18n="feature-5-title">Simultaneous meetings</h3>
+            <p data-i18n="feature-5-desc">Join two calls. Lower the volume of one to hear the other.</p>
+          </article>
+        </div>
+      </section>
+
+      <div class="showcase reveal">
+        <figure class="showcase-panel">
+          <img src="./screenshot-tab-control.png" alt="Volume for B controlling more than one browser tab with independent gain values and mute state" width="560" height="560" loading="lazy" data-i18n-alt="showcase-img-alt">
+        </figure>
+        <figure class="showcase-panel showcase-panel-secondary">
+          <img src="./screenshot-features-grid.png" alt="Overview of Volume for B's four key capabilities: per-tab volume, instant mute, audio locator, and easy reset" width="560" height="560" loading="lazy" data-i18n-alt="showcase-secondary-alt">
+        </figure>
       </div>
 
-      <div class="faq-grid">
-        <article class="faq-item">
-          <h3 data-i18n="faq-1-title">Ela coleta dados?</h3>
-          <p data-i18n="faq-1-desc">A documentacao do projeto diz que nao. As preferencias ficam em armazenamento local e o audio e processado no navegador.</p>
-        </article>
+      <section class="section reveal" id="how" aria-labelledby="how-title">
+        <div class="section-header">
+          <p class="section-kicker" data-i18n="how-kicker">how to use</p>
+          <h2 class="section-title" id="how-title" data-i18n="how-title-text">Four steps and done.</h2>
+          <p class="section-lead" data-i18n="how-lead">The goal is for anyone to understand usage without opening a README or technical documentation.</p>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <p data-i18n="step-1">Open a tab with audio, such as YouTube, Spotify, a call, or an online lesson.</p>
+          </article>
+          <article class="step">
+            <p data-i18n="step-2">Click the extension icon and select the tab that is playing audio.</p>
+          </article>
+          <article class="step">
+            <p data-i18n="step-3">Click start and move the slider to set the gain you want.</p>
+          </article>
+          <article class="step">
+            <p data-i18n="step-4">If you want, use mute, reset, or let the extension remember gain for that domain.</p>
+          </article>
+        </div>
+      </section>
 
-        <article class="faq-item">
-          <h3 data-i18n="faq-2-title">Funciona em qualquer site?</h3>
-          <p data-i18n="faq-2-desc">A proposta e funcionar em abas do navegador com audio, mas o comportamento pode variar conforme o site e as restricoes do Chromium.</p>
-        </article>
+      <section class="section reveal" id="privacy" aria-labelledby="privacy-title">
+        <div class="section-header">
+          <p class="section-kicker" data-i18n="privacy-kicker">privacy and permissions</p>
+          <h2 class="section-title" id="privacy-title" data-i18n="privacy-title-text">What it accesses and why that exists.</h2>
+          <p class="section-lead" data-i18n="privacy-lead">Because the extension works with tab audio, this part needs to be clear for anyone who will install and use it.</p>
+        </div>
+        <div class="privacy-grid">
+          <article class="callout">
+            <h3 data-i18n="privacy-callout-title">Local processing</h3>
+            <p data-i18n="privacy-callout-desc">Audio is handled inside the browser. The project states that it does not send audio to external servers, does not use analytics, does not use trackers, and does not sell data.</p>
+            <div class="chip-row">
+              <span class="chip" data-i18n="chip-no-ads">no ads</span>
+              <span class="chip" data-i18n="chip-no-data">no data collection</span>
+              <span class="chip" data-i18n="chip-open-source">open source</span>
+            </div>
+          </article>
+          <article class="callout">
+            <h3 data-i18n="permissions-title">Permissions in plain language</h3>
+            <ul>
+              <li data-i18n="permission-1">tabs: locate open tabs and identify which ones currently have audio.</li>
+              <li data-i18n="permission-2">tabCapture: access tab audio to apply local gain.</li>
+              <li data-i18n="permission-3">offscreen: process audio without needing a visible page.</li>
+              <li data-i18n="permission-4">storage: save theme and preferences, including gain by domain.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
 
-        <article class="faq-item">
-          <h3 data-i18n="faq-3-title">Ela melhora a qualidade do som?</h3>
-          <p data-i18n="faq-3-desc">Nao. Ela aumenta ganho. Se a fonte ja estiver ruim ou distorcida, mais volume nao resolve a causa.</p>
-        </article>
+      <section class="section reveal" id="faq" aria-labelledby="faq-title">
+        <div class="section-header">
+          <p class="section-kicker" data-i18n="faq-kicker">faq</p>
+          <h2 class="section-title" id="faq-title" data-i18n="faq-title-text">Common questions from first-time visitors.</h2>
+          <p class="section-lead" data-i18n="faq-lead">These answers are here so end users do not have to guess how the extension behaves.</p>
+        </div>
+        <div class="faq-list">
+          <article class="faq-item">
+            <h3 data-i18n="faq-1-title">Does it collect data?</h3>
+            <p data-i18n="faq-1-desc">The project documentation says no. Preferences stay in local storage and audio is processed in the browser.</p>
+          </article>
+          <article class="faq-item">
+            <h3 data-i18n="faq-2-title">Does it work on every site?</h3>
+            <p data-i18n="faq-2-desc">The goal is to work on browser tabs with audio, but behavior can vary depending on the site and Chromium restrictions.</p>
+          </article>
+          <article class="faq-item">
+            <h3 data-i18n="faq-3-title">Does it improve audio quality?</h3>
+            <p data-i18n="faq-3-desc">No. It increases gain. If the source is already poor or distorted, more volume does not fix the cause.</p>
+          </article>
+          <article class="faq-item">
+            <h3 data-i18n="faq-4-title">If I am a developer, where do I look for technical details?</h3>
+            <p data-i18n="faq-4-desc">In the repository. The README already covers installation, scripts, structure, tests, build, and developer-mode loading.</p>
+          </article>
+        </div>
+      </section>
+    </main>
 
-        <article class="faq-item">
-          <h3 data-i18n="faq-4-title">Se eu desenvolver, onde olho os detalhes tecnicos?</h3>
-          <p data-i18n="faq-4-desc">No repositorio. O README ja cobre instalacao, scripts, estrutura, testes, build e carregamento em modo desenvolvedor.</p>
-        </article>
+    <footer class="footer reveal">
+      <div>
+        <h3 data-i18n="footer-1-title">For end users</h3>
+        <p data-i18n="footer-1-desc">If you only want to understand the extension, this page already covers the essentials: what it does, when it helps, how to use it, and how it handles privacy.</p>
       </div>
-    </section>
-
-    <footer class="footer-grid reveal">
-      <div class="footer-block panel">
-        <h3 data-i18n="footer-1-title">Para usuario final</h3>
-        <p data-i18n="footer-1-desc">Se voce so quer entender a extensao, esta pagina ja cobre o essencial: o que ela faz, quando ajuda, como usar e como lida com privacidade.</p>
-      </div>
-
-      <div class="footer-block panel">
-        <h3 data-i18n="footer-2-title">Para dev</h3>
-        <p data-i18n="footer-2-desc">Se voce quer contribuir ou auditar o projeto, va direto ao repositorio. A documentacao atual ja traz o necessario para comecar.</p>
+      <div>
+        <h3 data-i18n="footer-2-title">For developers</h3>
+        <p data-i18n="footer-2-desc">If you want to contribute or audit the project, go straight to the repository. The current documentation already gives you what you need to start.</p>
         <div class="footer-links">
-          <a class="footer-link mono" href="https://github.com/maxjuniorbr/volume-for-b" target="_blank" rel="noreferrer" data-i18n="footer-link-1">repositorio</a>
+          <a class="footer-link mono" href="https://github.com/maxjuniorbr/volume-for-b" target="_blank" rel="noreferrer" data-i18n="footer-link-1">repository</a>
           <a class="footer-link mono" href="https://github.com/maxjuniorbr/volume-for-b/blob/main/README.md" target="_blank" rel="noreferrer" data-i18n="footer-link-2">readme</a>
-          <a class="footer-link mono" href="https://github.com/maxjuniorbr/volume-for-b/blob/main/PRIVACY.md" target="_blank" rel="noreferrer" data-i18n="footer-link-3">privacidade</a>
-          <a class="footer-link mono" href="https://github.com/maxjuniorbr/volume-for-b/blob/main/SUPPORT.md" target="_blank" rel="noreferrer" data-i18n="footer-link-4">suporte</a>
-          <a class="footer-link mono" href="https://github.com/maxjuniorbr/volume-for-b/blob/main/SECURITY.md" target="_blank" rel="noreferrer" data-i18n="footer-link-5">seguranca</a>
+          <a class="footer-link mono" href="https://github.com/maxjuniorbr/volume-for-b/blob/main/PRIVACY.md" target="_blank" rel="noreferrer" data-i18n="footer-link-3">privacy</a>
+          <a class="footer-link mono" href="https://github.com/maxjuniorbr/volume-for-b/blob/main/SUPPORT.md" target="_blank" rel="noreferrer" data-i18n="footer-link-4">support</a>
+          <a class="footer-link mono" href="https://github.com/maxjuniorbr/volume-for-b/blob/main/SECURITY.md" target="_blank" rel="noreferrer" data-i18n="footer-link-5">security</a>
         </div>
       </div>
     </footer>
   </div>
 
   <script>
-    const translations = {
-      'pt-BR': {
-        metaTitle: 'Volume for B | Mais volume por aba no navegador',
-        metaDescription: 'Aumente o volume de videos, aulas e chamadas em abas do Chrome em ate 600%, com controle por aba e processamento local.',
-        'brand-subtitle': 'mais volume para abas com audio',
-        'nav-what': 'o que faz',
-        'nav-how': 'como usar',
-        'nav-privacy': 'privacidade',
-        'nav-faq': 'faq',
-        'hero-badge': 'extensao chrome para audio por aba',
-        'hero-title': 'Quando o video esta baixo, a aba ganha reforco.',
-        'hero-lead': 'Aumente o volume de abas em ate 600%. Controle individual, processamento local e foco em privacidade.',
-        'hero-primary': 'entender como usar',
-        'hero-secondary': 'ver repositorio',
-        'stat-1': 'ganho maximo para abas com audio',
-        'stat-2-title': 'local',
-        'stat-2': 'processamento no navegador, sem servidor externo',
-        'stat-3-title': 'por aba',
-        'stat-3': 'controle individual, mute, reset e memoria por dominio',
-        'side-kicker': 'em linguagem direta',
-        'side-1': 'Ajuda quando YouTube, Spotify, aulas, chamadas ou players web estao baixos demais.',
-        'side-2': 'Nao mexe no volume geral do computador. O controle acontece na aba escolhida.',
-        'side-3': 'Nao e um equalizador magico: ele aumenta ganho, nao corrige audio ruim.',
-        'side-badges': 'resumo',
-        'chip-1': 'sem anuncios',
-        'chip-2': 'sem coleta de dados',
-        'chip-3': 'codigo aberto',
-        'what-kicker': 'o que a extensao realmente faz',
-        'what-title': 'Explicar rapido. Sem prometer mais do que ela entrega.',
-        'what-lead': 'Entenda o problema, a solucao e a privacidade. Detalhes tecnicos estao no repositorio.',
-        'what-card-1-title': 'O que resolve',
-        'what-card-1-desc': 'Quando o audio de uma aba esta baixo mesmo com o volume normal do navegador e do sistema ja alto.',
-        'what-card-2-title': 'Como resolve',
-        'what-card-2-desc': 'Captura o audio da aba, aplica ganho localmente e permite ajustar o volume entre 0% e 600%.',
-        'what-card-3-title': 'Onde o escopo termina',
-        'what-card-3-desc': 'Nao controla aplicativos fora do navegador, nao melhora automaticamente mixagem ruim e nao substitui hardware.',
-        'features-kicker': 'o que voce encontra',
-        'features-title': 'Tudo foi feito para ajustar audio de forma objetiva.',
-        'features-lead': 'Sem curva de aprendizado. Identifique a aba, inicie o controle e ajuste o ganho.',
-        'feature-1-title': 'Boost de 0% a 600%',
-        'feature-1-desc': 'Voce pode reduzir, manter em 100% ou aumentar bastante o volume conforme a necessidade.',
-        'feature-2-title': 'Lista de abas com audio',
-        'feature-2-desc': 'A extensao mostra quais abas estao emitindo som para voce escolher a certa.',
-        'feature-3-title': 'Mute, reset e parada',
-        'feature-3-desc': 'Da para mutar a aba, voltar para 100% ou parar o controle sem recarregar a pagina.',
-        'feature-4-title': 'Memoria por dominio',
-        'feature-4-desc': 'Se um site sempre precisa de mais ganho, a extensao pode guardar essa preferencia.',
-        'feature-5-title': 'Reunioes simultaneas',
-        'feature-5-desc': 'Participe de duas chamadas. Reduza o volume de uma para ouvir a outra.',
-        'how-kicker': 'como usar',
-        'how-title': 'Quatro passos e acabou.',
-        'how-lead': 'A ideia e que qualquer pessoa entenda o caminho de uso sem precisar abrir README ou documentacao tecnica.',
-        'step-1': 'Abra uma aba com audio, como YouTube, Spotify, uma chamada ou uma aula online.',
-        'step-2': 'Clique no icone da extensao e selecione a aba que esta reproduzindo audio.',
-        'step-3': 'Clique em iniciar e ajuste o slider para definir o ganho desejado.',
-        'step-4': 'Se quiser, use mute, reset ou deixe a extensao lembrar o ganho daquele dominio.',
-        'privacy-kicker': 'privacidade e permissoes',
-        'privacy-title': 'O que ela acessa e por que isso existe.',
-        'privacy-lead': 'Como a extensao trabalha com audio de abas, essa parte precisa ser clara para quem for instalar e usar.',
-        'privacy-callout-title': 'Processamento local',
-        'privacy-callout-desc': 'O audio e tratado dentro do navegador. O projeto declara que nao envia audio para servidores externos, nao usa analytics, nao usa trackers e nao vende dados.',
-        'permissions-title': 'Permissoes em linguagem normal',
-        'permission-1': 'tabs: localizar abas abertas e identificar quais estao com audio.',
-        'permission-2': 'tabCapture: acessar o audio da aba para aplicar ganho localmente.',
-        'permission-3': 'offscreen: processar audio sem precisar de uma pagina visivel.',
-        'permission-4': 'storage: salvar tema e preferencias, incluindo ganho por dominio.',
-        'faq-kicker': 'faq',
-        'faq-title': 'Duvidas comuns de quem chegou agora.',
-        'faq-lead': 'Essas respostas existem para evitar que o usuario final tenha que adivinhar o comportamento da extensao.',
-        'faq-1-title': 'Ela coleta dados?',
-        'faq-1-desc': 'A documentacao do projeto diz que nao. As preferencias ficam em armazenamento local e o audio e processado no navegador.',
-        'faq-2-title': 'Funciona em qualquer site?',
-        'faq-2-desc': 'A proposta e funcionar em abas do navegador com audio, mas o comportamento pode variar conforme o site e as restricoes do Chromium.',
-        'faq-3-title': 'Ela melhora a qualidade do som?',
-        'faq-3-desc': 'Nao. Ela aumenta ganho. Se a fonte ja estiver ruim ou distorcida, mais volume nao resolve a causa.',
-        'faq-4-title': 'Se eu desenvolver, onde olho os detalhes tecnicos?',
-        'faq-4-desc': 'No repositorio. O README ja cobre instalacao, scripts, estrutura, testes, build e carregamento em modo desenvolvedor.',
-        'footer-1-title': 'Para usuario final',
-        'footer-1-desc': 'Se voce so quer entender a extensao, esta pagina ja cobre o essencial: o que ela faz, quando ajuda, como usar e como lida com privacidade.',
-        'footer-2-title': 'Para dev',
-        'footer-2-desc': 'Se voce quer contribuir ou auditar o projeto, va direto ao repositorio. A documentacao atual ja traz o necessario para comecar.',
-        'footer-link-1': 'repositorio',
-        'footer-link-2': 'readme',
-        'footer-link-3': 'privacidade',
-        'footer-link-4': 'suporte',
-        'footer-link-5': 'seguranca'
-      },
+    const T = {
       en: {
         metaTitle: 'Volume for B | More volume per browser tab',
-        metaDescription: 'Boost videos, lessons, and calls in Chrome tabs up to 600%, with per-tab control and local processing.',
-        'brand-subtitle': 'more volume for tabs with audio',
-        'nav-what': 'what it does',
-        'nav-how': 'how to use',
-        'nav-privacy': 'privacy',
-        'nav-faq': 'faq',
+        metaDesc: 'Boost videos, lessons, and calls in Chrome tabs up to 600%, with per-tab control and local processing.',
+        skip: 'Skip to content',
         'hero-badge': 'chrome extension for per-tab audio',
         'hero-title': 'When the video is too quiet, the tab gets a boost.',
         'hero-lead': 'Boost tab volume up to 600%. Individual control, local processing, and privacy-focused.',
-        'hero-primary': 'learn how to use it',
-        'hero-secondary': 'view repository',
+        'hero-cta': 'Install from Chrome Web Store',
+        'hero-repo': 'Repository',
+        'hero-img-alt': 'Volume for B extension popup showing volume slider, tab list, and control buttons',
         'stat-1': 'maximum gain for tabs with audio',
-        'stat-2-title': 'local',
+        'stat-2-value': 'local',
         'stat-2': 'processing in the browser, no external server',
-        'stat-3-title': 'per tab',
+        'stat-3-value': 'per tab',
         'stat-3': 'individual control, mute, reset, and domain memory',
-        'side-kicker': 'in plain language',
-        'side-1': 'It helps when YouTube, Spotify, lessons, calls, or web players are simply too quiet.',
-        'side-2': 'It does not change your computer master volume. Control happens on the selected tab.',
-        'side-3': 'It is not a magic equalizer: it increases gain, it does not rebuild poor audio.',
-        'side-badges': 'summary',
-        'chip-1': 'no ads',
-        'chip-2': 'no data collection',
-        'chip-3': 'open source',
         'what-kicker': 'what the extension really does',
-        'what-title': 'Explain it fast. Do not promise more than it delivers.',
+        'what-title-text': 'Explain it fast. Do not promise more than it delivers.',
         'what-lead': 'Understand the problem, solution, and privacy. Technical details are in the repository.',
         'what-card-1-title': 'What it solves',
         'what-card-1-desc': 'When tab audio is too quiet even though browser and system volume are already high.',
@@ -1040,7 +1049,7 @@
         'what-card-3-title': 'Where the scope ends',
         'what-card-3-desc': 'It does not control apps outside the browser, does not automatically improve bad mixing, and does not replace hardware.',
         'features-kicker': 'what you get',
-        'features-title': 'Everything is built to adjust audio without friction.',
+        'features-title-text': 'Everything is built to adjust audio without friction.',
         'features-lead': 'No learning curve. Identify the tab, start control, and adjust gain.',
         'feature-1-title': '0% to 600% boost',
         'feature-1-desc': 'You can reduce, keep at 100%, or significantly increase volume as needed.',
@@ -1052,25 +1061,30 @@
         'feature-4-desc': 'If a site always needs extra gain, the extension can save that preference.',
         'feature-5-title': 'Simultaneous meetings',
         'feature-5-desc': 'Join two calls. Lower the volume of one to hear the other.',
+        'showcase-img-alt': 'Volume for B controlling more than one browser tab with independent gain values and mute state',
+        'showcase-secondary-alt': 'Overview of Volume for B key capabilities: per-tab volume, instant mute, audio locator, and easy reset',
         'how-kicker': 'how to use',
-        'how-title': 'Four steps and done.',
+        'how-title-text': 'Four steps and done.',
         'how-lead': 'The goal is for anyone to understand usage without opening a README or technical documentation.',
         'step-1': 'Open a tab with audio, such as YouTube, Spotify, a call, or an online lesson.',
         'step-2': 'Click the extension icon and select the tab that is playing audio.',
         'step-3': 'Click start and move the slider to set the gain you want.',
         'step-4': 'If you want, use mute, reset, or let the extension remember gain for that domain.',
         'privacy-kicker': 'privacy and permissions',
-        'privacy-title': 'What it accesses and why that exists.',
+        'privacy-title-text': 'What it accesses and why that exists.',
         'privacy-lead': 'Because the extension works with tab audio, this part needs to be clear for anyone who will install and use it.',
         'privacy-callout-title': 'Local processing',
         'privacy-callout-desc': 'Audio is handled inside the browser. The project states that it does not send audio to external servers, does not use analytics, does not use trackers, and does not sell data.',
+        'chip-no-ads': 'no ads',
+        'chip-no-data': 'no data collection',
+        'chip-open-source': 'open source',
         'permissions-title': 'Permissions in plain language',
         'permission-1': 'tabs: locate open tabs and identify which ones currently have audio.',
         'permission-2': 'tabCapture: access tab audio to apply local gain.',
         'permission-3': 'offscreen: process audio without needing a visible page.',
         'permission-4': 'storage: save theme and preferences, including gain by domain.',
         'faq-kicker': 'faq',
-        'faq-title': 'Common questions from first-time visitors.',
+        'faq-title-text': 'Common questions from first-time visitors.',
         'faq-lead': 'These answers are here so end users do not have to guess how the extension behaves.',
         'faq-1-title': 'Does it collect data?',
         'faq-1-desc': 'The project documentation says no. Preferences stay in local storage and audio is processed in the browser.',
@@ -1088,36 +1102,111 @@
         'footer-link-2': 'readme',
         'footer-link-3': 'privacy',
         'footer-link-4': 'support',
-        'footer-link-5': 'security'
+        'footer-link-5': 'security',
+        'lang-toggle': 'Change language',
+        'theme-label-light': 'Switch to light theme',
+        'theme-label-dark': 'Switch to dark theme'
+      },
+      'pt-BR': {
+        metaTitle: 'Volume for B | Mais volume por aba no navegador',
+        metaDesc: 'Aumente o volume de videos, aulas e chamadas em abas do Chrome em ate 600%, com controle por aba e processamento local.',
+        skip: 'Ir para o conteudo',
+        'hero-badge': 'extensao chrome para audio por aba',
+        'hero-title': 'Quando o video esta baixo, a aba ganha reforco.',
+        'hero-lead': 'Aumente o volume de abas em ate 600%. Controle individual, processamento local e foco em privacidade.',
+        'hero-cta': 'Instalar pela Chrome Web Store',
+        'hero-repo': 'Repositorio',
+        'hero-img-alt': 'Popup da extensao Volume for B mostrando slider de volume, lista de abas e botoes de controle',
+        'stat-1': 'ganho maximo para abas com audio',
+        'stat-2-value': 'local',
+        'stat-2': 'processamento no navegador, sem servidor externo',
+        'stat-3-value': 'por aba',
+        'stat-3': 'controle individual, mute, reset e memoria por dominio',
+        'what-kicker': 'o que a extensao realmente faz',
+        'what-title-text': 'Explicar rapido. Sem prometer mais do que ela entrega.',
+        'what-lead': 'Entenda o problema, a solucao e a privacidade. Detalhes tecnicos estao no repositorio.',
+        'what-card-1-title': 'O que resolve',
+        'what-card-1-desc': 'Quando o audio de uma aba esta baixo mesmo com o volume normal do navegador e do sistema ja alto.',
+        'what-card-2-title': 'Como resolve',
+        'what-card-2-desc': 'Captura o audio da aba, aplica ganho localmente e permite ajustar o volume entre 0% e 600%.',
+        'what-card-3-title': 'Onde o escopo termina',
+        'what-card-3-desc': 'Nao controla aplicativos fora do navegador, nao melhora automaticamente mixagem ruim e nao substitui hardware.',
+        'features-kicker': 'o que voce encontra',
+        'features-title-text': 'Tudo foi feito para ajustar audio de forma objetiva.',
+        'features-lead': 'Sem curva de aprendizado. Identifique a aba, inicie o controle e ajuste o ganho.',
+        'feature-1-title': 'Boost de 0% a 600%',
+        'feature-1-desc': 'Voce pode reduzir, manter em 100% ou aumentar bastante o volume conforme a necessidade.',
+        'feature-2-title': 'Lista de abas com audio',
+        'feature-2-desc': 'A extensao mostra quais abas estao emitindo som para voce escolher a certa.',
+        'feature-3-title': 'Mute, reset e parada',
+        'feature-3-desc': 'Da para mutar a aba, voltar para 100% ou parar o controle sem recarregar a pagina.',
+        'feature-4-title': 'Memoria por dominio',
+        'feature-4-desc': 'Se um site sempre precisa de mais ganho, a extensao pode guardar essa preferencia.',
+        'feature-5-title': 'Reunioes simultaneas',
+        'feature-5-desc': 'Participe de duas chamadas. Reduza o volume de uma para ouvir a outra.',
+        'showcase-img-alt': 'Volume for B controlando mais de uma aba do navegador com ganhos independentes e estado de mudo',
+        'showcase-secondary-alt': 'Visao geral das principais funcionalidades do Volume for B: volume por aba, mudo instantaneo, localizador de audio e reset facil',
+        'how-kicker': 'como usar',
+        'how-title-text': 'Quatro passos e acabou.',
+        'how-lead': 'A ideia e que qualquer pessoa entenda o caminho de uso sem precisar abrir README ou documentacao tecnica.',
+        'step-1': 'Abra uma aba com audio, como YouTube, Spotify, uma chamada ou uma aula online.',
+        'step-2': 'Clique no icone da extensao e selecione a aba que esta reproduzindo audio.',
+        'step-3': 'Clique em iniciar e ajuste o slider para definir o ganho desejado.',
+        'step-4': 'Se quiser, use mute, reset ou deixe a extensao lembrar o ganho daquele dominio.',
+        'privacy-kicker': 'privacidade e permissoes',
+        'privacy-title-text': 'O que ela acessa e por que isso existe.',
+        'privacy-lead': 'Como a extensao trabalha com audio de abas, essa parte precisa ser clara para quem for instalar e usar.',
+        'privacy-callout-title': 'Processamento local',
+        'privacy-callout-desc': 'O audio e tratado dentro do navegador. O projeto declara que nao envia audio para servidores externos, nao usa analytics, nao usa trackers e nao vende dados.',
+        'chip-no-ads': 'sem anuncios',
+        'chip-no-data': 'sem coleta de dados',
+        'chip-open-source': 'codigo aberto',
+        'permissions-title': 'Permissoes em linguagem normal',
+        'permission-1': 'tabs: localizar abas abertas e identificar quais estao com audio.',
+        'permission-2': 'tabCapture: acessar o audio da aba para aplicar ganho localmente.',
+        'permission-3': 'offscreen: processar audio sem precisar de uma pagina visivel.',
+        'permission-4': 'storage: salvar tema e preferencias, incluindo ganho por dominio.',
+        'faq-kicker': 'faq',
+        'faq-title-text': 'Duvidas comuns de quem chegou agora.',
+        'faq-lead': 'Essas respostas existem para evitar que o usuario final tenha que adivinhar o comportamento da extensao.',
+        'faq-1-title': 'Ela coleta dados?',
+        'faq-1-desc': 'A documentacao do projeto diz que nao. As preferencias ficam em armazenamento local e o audio e processado no navegador.',
+        'faq-2-title': 'Funciona em qualquer site?',
+        'faq-2-desc': 'A proposta e funcionar em abas do navegador com audio, mas o comportamento pode variar conforme o site e as restricoes do Chromium.',
+        'faq-3-title': 'Ela melhora a qualidade do som?',
+        'faq-3-desc': 'Nao. Ela aumenta ganho. Se a fonte ja estiver ruim ou distorcida, mais volume nao resolve a causa.',
+        'faq-4-title': 'Se eu desenvolver, onde olho os detalhes tecnicos?',
+        'faq-4-desc': 'No repositorio. O README ja cobre instalacao, scripts, estrutura, testes, build e carregamento em modo desenvolvedor.',
+        'footer-1-title': 'Para usuario final',
+        'footer-1-desc': 'Se voce so quer entender a extensao, esta pagina ja cobre o essencial: o que ela faz, quando ajuda, como usar e como lida com privacidade.',
+        'footer-2-title': 'Para dev',
+        'footer-2-desc': 'Se voce quer contribuir ou auditar o projeto, va direto ao repositorio. A documentacao atual ja traz o necessario para comecar.',
+        'footer-link-1': 'repositorio',
+        'footer-link-2': 'readme',
+        'footer-link-3': 'privacidade',
+        'footer-link-4': 'suporte',
+        'footer-link-5': 'seguranca',
+        'lang-toggle': 'Mudar idioma',
+        'theme-label-light': 'Alternar para tema claro',
+        'theme-label-dark': 'Alternar para tema escuro'
       },
       es: {
         metaTitle: 'Volume for B | Mas volumen por pestana en el navegador',
-        metaDescription: 'Aumenta el volumen de videos, clases y llamadas en pestanas de Chrome hasta 600%, con control por pestana y procesamiento local.',
-        'brand-subtitle': 'mas volumen para pestanas con audio',
-        'nav-what': 'que hace',
-        'nav-how': 'como usar',
-        'nav-privacy': 'privacidad',
-        'nav-faq': 'faq',
+        metaDesc: 'Aumenta el volumen de videos, clases y llamadas en pestanas de Chrome hasta 600%, con control por pestana y procesamiento local.',
+        skip: 'Ir al contenido',
         'hero-badge': 'extension de chrome para audio por pestana',
         'hero-title': 'Cuando el video esta bajo, la pestana recibe refuerzo.',
         'hero-lead': 'Aumenta el volumen de pestanas hasta un 600%. Control individual, procesamiento local y privacidad.',
-        'hero-primary': 'entender como usar',
-        'hero-secondary': 'ver repositorio',
+        'hero-cta': 'Instalar desde Chrome Web Store',
+        'hero-repo': 'Repositorio',
+        'hero-img-alt': 'Popup de la extension Volume for B mostrando slider de volumen, lista de pestanas y botones de control',
         'stat-1': 'ganancia maxima para pestanas con audio',
-        'stat-2-title': 'local',
+        'stat-2-value': 'local',
         'stat-2': 'procesamiento en el navegador, sin servidor externo',
-        'stat-3-title': 'por pestana',
+        'stat-3-value': 'por pestana',
         'stat-3': 'control individual, mute, reset y memoria por dominio',
-        'side-kicker': 'en lenguaje directo',
-        'side-1': 'Ayuda cuando YouTube, Spotify, clases, llamadas o reproductores web suenan demasiado bajo.',
-        'side-2': 'No cambia el volumen general de la computadora. El control ocurre en la pestana elegida.',
-        'side-3': 'No es un ecualizador magico: aumenta ganancia, no reconstruye audio malo.',
-        'side-badges': 'resumen',
-        'chip-1': 'sin anuncios',
-        'chip-2': 'sin recoleccion de datos',
-        'chip-3': 'codigo abierto',
         'what-kicker': 'lo que la extension realmente hace',
-        'what-title': 'Explicarlo rapido. Sin prometer mas de lo que entrega.',
+        'what-title-text': 'Explicarlo rapido. Sin prometer mas de lo que entrega.',
         'what-lead': 'Entiende el problema, la solucion y la privacidad. Los detalles tecnicos estan en el repositorio.',
         'what-card-1-title': 'Lo que resuelve',
         'what-card-1-desc': 'Cuando el audio de una pestana esta bajo incluso con el volumen del navegador y del sistema ya alto.',
@@ -1126,7 +1215,7 @@
         'what-card-3-title': 'Donde termina el alcance',
         'what-card-3-desc': 'No controla aplicaciones fuera del navegador, no mejora automaticamente mala mezcla y no reemplaza hardware.',
         'features-kicker': 'lo que encuentras',
-        'features-title': 'Todo esta hecho para ajustar audio sin rodeos.',
+        'features-title-text': 'Todo esta hecho para ajustar audio sin rodeos.',
         'features-lead': 'Sin curva de aprendizaje. Identifica la pestana, inicia el control y ajusta la ganancia.',
         'feature-1-title': 'Boost de 0% a 600%',
         'feature-1-desc': 'Puedes reducir, mantener en 100% o aumentar bastante el volumen segun lo necesites.',
@@ -1138,25 +1227,30 @@
         'feature-4-desc': 'Si un sitio siempre necesita mas ganancia, la extension puede guardar esa preferencia.',
         'feature-5-title': 'Reuniones simultaneas',
         'feature-5-desc': 'Participa en dos llamadas. Baja el volumen de una para escuchar la otra.',
+        'showcase-img-alt': 'Volume for B controlando mas de una pestana del navegador con ganancias independientes y estado de silencio',
+        'showcase-secondary-alt': 'Vista general de las capacidades clave de Volume for B: volumen por pestana, mudo instantaneo, localizador de audio y reset facil',
         'how-kicker': 'como usar',
-        'how-title': 'Cuatro pasos y listo.',
+        'how-title-text': 'Cuatro pasos y listo.',
         'how-lead': 'La idea es que cualquier persona entienda el uso sin abrir README ni documentacion tecnica.',
         'step-1': 'Abre una pestana con audio, como YouTube, Spotify, una llamada o una clase online.',
         'step-2': 'Haz clic en el icono de la extension y selecciona la pestana que esta reproduciendo audio.',
         'step-3': 'Haz clic en iniciar y mueve el deslizador para definir la ganancia deseada.',
         'step-4': 'Si quieres, usa mute, reset o deja que la extension recuerde la ganancia de ese dominio.',
         'privacy-kicker': 'privacidad y permisos',
-        'privacy-title': 'A que accede y por que existe eso.',
+        'privacy-title-text': 'A que accede y por que existe eso.',
         'privacy-lead': 'Como la extension trabaja con audio de pestanas, esta parte debe quedar clara para quien vaya a instalarla y usarla.',
         'privacy-callout-title': 'Procesamiento local',
         'privacy-callout-desc': 'El audio se trata dentro del navegador. El proyecto declara que no envia audio a servidores externos, no usa analytics, no usa trackers y no vende datos.',
+        'chip-no-ads': 'sin anuncios',
+        'chip-no-data': 'sin recoleccion de datos',
+        'chip-open-source': 'codigo abierto',
         'permissions-title': 'Permisos en lenguaje normal',
         'permission-1': 'tabs: localizar pestanas abiertas e identificar cuales tienen audio.',
         'permission-2': 'tabCapture: acceder al audio de la pestana para aplicar ganancia local.',
         'permission-3': 'offscreen: procesar audio sin necesitar una pagina visible.',
         'permission-4': 'storage: guardar tema y preferencias, incluida ganancia por dominio.',
         'faq-kicker': 'faq',
-        'faq-title': 'Dudas comunes de quien acaba de llegar.',
+        'faq-title-text': 'Dudas comunes de quien acaba de llegar.',
         'faq-lead': 'Estas respuestas existen para que el usuario final no tenga que adivinar como se comporta la extension.',
         'faq-1-title': 'Recoge datos?',
         'faq-1-desc': 'La documentacion del proyecto dice que no. Las preferencias quedan en almacenamiento local y el audio se procesa en el navegador.',
@@ -1174,73 +1268,144 @@
         'footer-link-2': 'readme',
         'footer-link-3': 'privacidad',
         'footer-link-4': 'soporte',
-        'footer-link-5': 'seguridad'
+        'footer-link-5': 'seguridad',
+        'lang-toggle': 'Cambiar idioma',
+        'theme-label-light': 'Cambiar a tema claro',
+        'theme-label-dark': 'Cambiar a tema oscuro'
       }
     };
 
-    const langSelect = document.getElementById('langSelect');
-    const themeToggle = document.getElementById('themeToggle');
-    const html = document.documentElement;
-    const metaDescription = document.querySelector('meta[name="description"]');
-    const metaOgTitle = document.querySelector('meta[property="og:title"]');
-    const metaOgDescription = document.querySelector('meta[property="og:description"]');
-    const revealElements = document.querySelectorAll('.reveal');
+    const LANGS = ['en', 'pt-BR', 'es'];
+    const LANG_LABELS = { en: 'EN', 'pt-BR': 'PT-BR', es: 'ES' };
+    const LANG_HTML = { en: 'en', 'pt-BR': 'pt-BR', es: 'es' };
+    const STORAGE_KEYS = { lang: 'vfb-lang', theme: 'vfb-theme' };
+    const themeQuery = globalThis.matchMedia('(prefers-color-scheme: light)');
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
 
-    function updateLanguage(lang) {
-      const texts = translations[lang] || translations.en;
+    let currentLangIndex = 0;
+    let currentLang = 'en';
+    const langBtn = document.getElementById('langToggle');
+    const themeBtn = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
 
-      document.querySelectorAll('[data-i18n]').forEach((element) => {
-        const key = element.dataset.i18n;
-        if (texts[key]) {
-          element.textContent = texts[key];
-        }
-      });
-
-      document.title = texts.metaTitle;
-      metaDescription.setAttribute('content', texts.metaDescription);
-      metaOgTitle?.setAttribute('content', texts.metaTitle);
-      metaOgDescription?.setAttribute('content', texts.metaDescription);
-      html.lang = lang;
+    function setThemeButtonLabel(theme) {
+      const t = T[currentLang] || T.en;
+      themeBtn.setAttribute('aria-label', theme === 'light' ? t['theme-label-dark'] : t['theme-label-light']);
     }
 
-    function updateTheme(theme) {
-      if (theme === 'light') {
-        html.dataset.theme = 'light';
-        themeToggle.textContent = '☾';
-      } else {
-        delete html.dataset.theme;
-        themeToggle.textContent = '☀';
+    function reflectTheme(theme) {
+      themeIcon.innerHTML = theme === 'light' ? '&#9790;' : '&#9728;';
+      themeMeta.setAttribute('content', theme === 'light' ? '#f5f5f0' : '#0c0c0f');
+      setThemeButtonLabel(theme);
+    }
+
+    function applyLang(lang) {
+      const resolvedLang = LANGS.includes(lang) ? lang : 'en';
+      const t = T[resolvedLang] || T.en;
+      currentLang = resolvedLang;
+      currentLangIndex = LANGS.indexOf(resolvedLang);
+      document.documentElement.lang = LANG_HTML[resolvedLang] || resolvedLang;
+      document.title = t.metaTitle;
+      document.querySelector('meta[name="description"]').setAttribute('content', t.metaDesc);
+      document.querySelector('meta[property="og:title"]').setAttribute('content', t.metaTitle);
+      document.querySelector('meta[property="og:description"]').setAttribute('content', t.metaDesc);
+      document.querySelector('meta[name="twitter:title"]').setAttribute('content', t.metaTitle);
+      document.querySelector('meta[name="twitter:description"]').setAttribute('content', t.metaDesc);
+      langBtn.textContent = LANG_LABELS[resolvedLang];
+      langBtn.setAttribute('aria-label', t['lang-toggle']);
+      localStorage.setItem(STORAGE_KEYS.lang, resolvedLang);
+
+      document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var key = el.dataset.i18n;
+        if (t[key]) el.textContent = t[key];
+      });
+      document.querySelectorAll('[data-i18n-alt]').forEach(function(el) {
+        var key = el.dataset.i18nAlt;
+        if (t[key] !== undefined) el.alt = t[key];
+      });
+      setThemeButtonLabel(document.documentElement.dataset.theme || getSystemTheme());
+    }
+
+    langBtn.addEventListener('click', function() {
+      currentLangIndex = (currentLangIndex + 1) % LANGS.length;
+      applyLang(LANGS[currentLangIndex]);
+    });
+
+    function getSystemTheme() {
+      return themeQuery.matches ? 'light' : 'dark';
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      reflectTheme(theme);
+      localStorage.setItem(STORAGE_KEYS.theme, theme);
+    }
+
+    themeBtn.addEventListener('click', function() {
+      var current = document.documentElement.dataset.theme || getSystemTheme();
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+
+    function syncThemeWithSystem() {
+      delete document.documentElement.dataset.theme;
+      reflectTheme(getSystemTheme());
+    }
+
+    function getInitialLang() {
+      var savedLang = localStorage.getItem(STORAGE_KEYS.lang);
+      if (LANGS.includes(savedLang)) return savedLang;
+
+      var candidates = [navigator.language].concat(navigator.languages || []);
+      for (var index = 0; index < candidates.length; index += 1) {
+        var candidate = (candidates[index] || '').toLowerCase();
+        if (candidate.indexOf('pt') === 0) return 'pt-BR';
+        if (candidate.indexOf('es') === 0) return 'es';
+        if (candidate.indexOf('en') === 0) return 'en';
       }
-      localStorage.setItem('vfb-theme', theme);
+
+      return 'en';
     }
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('active');
+    /* Init theme */
+    var savedTheme = localStorage.getItem(STORAGE_KEYS.theme);
+    if (savedTheme) {
+      applyTheme(savedTheme);
+    } else {
+      syncThemeWithSystem();
+      var syncThemeOnChange = function() {
+        if (!localStorage.getItem(STORAGE_KEYS.theme)) {
+          syncThemeWithSystem();
         }
+      };
+
+      if (typeof themeQuery.addEventListener === 'function') {
+        themeQuery.addEventListener('change', syncThemeOnChange);
+      } else if (typeof themeQuery.addListener === 'function') {
+        themeQuery.addListener(syncThemeOnChange);
+      }
+    }
+
+    /* Init language */
+    applyLang(getInitialLang());
+
+    /* Reveal on scroll */
+    if ('IntersectionObserver' in globalThis) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.reveal').forEach(function(el) {
+        observer.observe(el);
       });
-    }, {
-      threshold: 0.14
-    });
-
-    revealElements.forEach((element) => observer.observe(element));
-
-    langSelect.addEventListener('change', (event) => {
-      updateLanguage(event.target.value);
-    });
-
-    themeToggle.addEventListener('click', () => {
-      const nextTheme = html.dataset.theme === 'light' ? 'dark' : 'light';
-      updateTheme(nextTheme);
-    });
-
-    const savedTheme = localStorage.getItem('vfb-theme');
-
-    langSelect.value = 'en';
-    updateLanguage('en');
-    updateTheme(savedTheme || 'dark');
-    document.body.dataset.ready = 'true';
+    } else {
+      document.querySelectorAll('.reveal').forEach(function(el) {
+        el.classList.add('visible');
+      });
+    }
   </script>
 </body>
 </html>
