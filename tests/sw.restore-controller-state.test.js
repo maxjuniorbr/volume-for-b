@@ -1,12 +1,6 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import vm from 'node:vm';
-import { describe, expect, it, vi } from 'vitest';
-
-const swPath = path.resolve(import.meta.dirname, '..', 'sw.js');
-const swSource = readFileSync(swPath, 'utf8');
-const constantsPath = path.resolve(import.meta.dirname, '..', 'constants.js');
-const constantsSource = readFileSync(constantsPath, 'utf8');
+import { describe, expect, it } from 'vitest';
+import { createChromeMock, createSandbox, loadSources } from './sw.helpers.js';
 
 function createDeferred() {
   let resolve;
@@ -20,71 +14,15 @@ function createDeferred() {
   return { promise, resolve, reject };
 }
 
-function createChromeMock() {
-  return {
-    runtime: {
-      onStartup: { addListener: vi.fn() },
-      onInstalled: { addListener: vi.fn() },
-      onMessage: { addListener: vi.fn() },
-      onConnect: { addListener: vi.fn() },
-      onSuspend: { addListener: vi.fn() },
-      sendMessage: vi.fn(),
-      id: 'test-extension-id'
-    },
-    tabs: {
-      onUpdated: { addListener: vi.fn() },
-      onRemoved: { addListener: vi.fn() },
-      get: vi.fn(),
-      query: vi.fn(),
-      update: vi.fn()
-    },
-    storage: {
-      local: {
-        get: vi.fn(),
-        set: vi.fn(),
-        remove: vi.fn()
-      }
-    },
-    offscreen: {
-      createDocument: vi.fn()
-    },
-    tabCapture: {
-      getMediaStreamId: vi.fn()
-    },
-    alarms: {
-      onAlarm: { addListener: vi.fn() },
-      get: vi.fn().mockResolvedValue(null),
-      create: vi.fn()
-    }
-  };
-}
-
 function loadServiceWorker(chrome) {
-  const context = vm.createContext({
-    chrome,
-    console: {
-      log: vi.fn(),
-      error: vi.fn(),
-      debug: vi.fn()
-    },
-    URL,
-    setTimeout,
-    clearTimeout,
-    // importScripts is unavailable in node:vm; the SW relies on it to load
-    // constants.js. We inject the constants source into the same sandbox
-    // and stub importScripts to a no-op.
-    importScripts: () => {}
-  });
-
-  // Load the checked-in worker source into an isolated test sandbox.
-  vm.runInContext(constantsSource, context, { filename: constantsPath });
-  vm.runInContext(swSource, context, { filename: swPath });
+  const context = createSandbox(chrome);
+  loadSources(context);
 
   return {
     context,
     // Static expressions expose worker internals without any user-controlled input.
-    restoreControllerState: () => vm.runInContext('restoreControllerState()', context),
-    readTabControllers: () => vm.runInContext('Array.from(tabControllers.entries())', context)
+    restoreControllerState: () => vm.runInContext('restoreControllerState()', context), // NOSONAR
+    readTabControllers: () => vm.runInContext('Array.from(tabControllers.entries())', context) // NOSONAR
   };
 }
 

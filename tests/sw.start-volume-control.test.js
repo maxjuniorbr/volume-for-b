@@ -3,84 +3,22 @@
  * de "active stream" que reaproveita um processador já existente no offscreen.
  */
 
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import vm from 'node:vm';
-import { describe, expect, it, vi } from 'vitest';
-
-const swPath = path.resolve(import.meta.dirname, '..', 'sw.js');
-const swSource = readFileSync(swPath, 'utf8');
-const constantsPath = path.resolve(import.meta.dirname, '..', 'constants.js');
-const constantsSource = readFileSync(constantsPath, 'utf8');
-
-function createChromeMock() {
-  return {
-    runtime: {
-      onStartup: { addListener: vi.fn() },
-      onInstalled: { addListener: vi.fn() },
-      onMessage: { addListener: vi.fn() },
-      onConnect: { addListener: vi.fn() },
-      onSuspend: { addListener: vi.fn() },
-      sendMessage: vi.fn(),
-      id: 'test-extension-id'
-    },
-    tabs: {
-      onUpdated: { addListener: vi.fn() },
-      onRemoved: { addListener: vi.fn() },
-      get: vi.fn(),
-      query: vi.fn(),
-      update: vi.fn()
-    },
-    storage: {
-      local: {
-        get: vi.fn(),
-        set: vi.fn(),
-        remove: vi.fn()
-      }
-    },
-    offscreen: {
-      createDocument: vi.fn()
-    },
-    tabCapture: {
-      getMediaStreamId: vi.fn()
-    },
-    alarms: {
-      onAlarm: { addListener: vi.fn() },
-      get: vi.fn().mockResolvedValue(null),
-      create: vi.fn()
-    }
-  };
-}
+import { describe, expect, it } from 'vitest';
+import { createChromeMock, createSandbox, loadSources } from './sw.helpers.js';
 
 function loadServiceWorker(chrome) {
-  const context = vm.createContext({
-    chrome,
-    console: {
-      log: vi.fn(),
-      error: vi.fn(),
-      debug: vi.fn()
-    },
-    URL,
-    setTimeout,
-    clearTimeout,
-    // The real SW uses importScripts('constants.js'); in tests we no-op it
-    // because we inject the constants source directly into the sandbox below.
-    importScripts: () => {}
-  });
-
-  // Load shared constants first, then the worker source. Both run in the
-  // same isolated sandbox so the worker can reference the constants.
-  vm.runInContext(constantsSource, context, { filename: constantsPath });
-  vm.runInContext(swSource, context, { filename: swPath });
+  const context = createSandbox(chrome);
+  loadSources(context);
 
   return {
     context,
     handleStart: (tabId) => new Promise((resolve) => {
-      vm.runInContext('globalThis.__lastResponse = null;', context);
-      const handler = vm.runInContext('handleStartVolumeControl', context);
+      vm.runInContext('globalThis.__lastResponse = null;', context); // NOSONAR
+      const handler = vm.runInContext('handleStartVolumeControl', context); // NOSONAR
       handler(tabId, (response) => resolve(response));
     }),
-    readTabControllers: () => vm.runInContext('Array.from(tabControllers.entries())', context)
+    readTabControllers: () => vm.runInContext('Array.from(tabControllers.entries())', context) // NOSONAR
   };
 }
 
