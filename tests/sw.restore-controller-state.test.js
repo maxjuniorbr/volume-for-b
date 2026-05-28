@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 const swPath = path.resolve(import.meta.dirname, '..', 'sw.js');
 const swSource = readFileSync(swPath, 'utf8');
+const constantsPath = path.resolve(import.meta.dirname, '..', 'constants.js');
+const constantsSource = readFileSync(constantsPath, 'utf8');
 
 function createDeferred() {
   let resolve;
@@ -24,7 +26,10 @@ function createChromeMock() {
       onStartup: { addListener: vi.fn() },
       onInstalled: { addListener: vi.fn() },
       onMessage: { addListener: vi.fn() },
-      sendMessage: vi.fn()
+      onConnect: { addListener: vi.fn() },
+      onSuspend: { addListener: vi.fn() },
+      sendMessage: vi.fn(),
+      id: 'test-extension-id'
     },
     tabs: {
       onUpdated: { addListener: vi.fn() },
@@ -45,6 +50,11 @@ function createChromeMock() {
     },
     tabCapture: {
       getMediaStreamId: vi.fn()
+    },
+    alarms: {
+      onAlarm: { addListener: vi.fn() },
+      get: vi.fn().mockResolvedValue(null),
+      create: vi.fn()
     }
   };
 }
@@ -59,10 +69,15 @@ function loadServiceWorker(chrome) {
     },
     URL,
     setTimeout,
-    clearTimeout
+    clearTimeout,
+    // importScripts is unavailable in node:vm; the SW relies on it to load
+    // constants.js. We inject the constants source into the same sandbox
+    // and stub importScripts to a no-op.
+    importScripts: () => {}
   });
 
   // Load the checked-in worker source into an isolated test sandbox.
+  vm.runInContext(constantsSource, context, { filename: constantsPath });
   vm.runInContext(swSource, context, { filename: swPath });
 
   return {
