@@ -44,6 +44,7 @@ async function cleanupOldDomains() {
     const now = Date.now();
     const maxAgeMs = DOMAIN_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
     const keysToRemove = [];
+    const migrations = {};
 
     for (const [key, value] of Object.entries(storage)) {
       if (key.startsWith('domain_')) {
@@ -54,11 +55,13 @@ async function cleanupOldDomains() {
           }
         } else if (typeof value === 'number') {
           // Se é valor legado (número apenas), migrar para novo formato
-          await chrome.storage.local.set({
-            [key]: { gain: value, lastAccessed: now }
-          });
+          migrations[key] = { gain: value, lastAccessed: now };
         }
       }
+    }
+
+    if (Object.keys(migrations).length > 0) {
+      await chrome.storage.local.set(migrations);
     }
 
     if (keysToRemove.length > 0) {
@@ -299,7 +302,7 @@ async function handleGetAudibleTabs(sendResponse) {
     const tabs = await chrome.tabs.query({ audible: true });
     const audibleTabs = tabs.map(tab => {
       // Validação e sanitização de URL
-      let domain = '';
+      let domain;
       try {
         const url = new URL(tab.url);
         domain = url.hostname;
@@ -326,23 +329,25 @@ async function handleGetAudibleTabs(sendResponse) {
 
 async function handleGetControlledTabs(sendResponse) {
   try {
-    const controlledTabs = [];
-
-    for (const [tabId, controller] of tabControllers.entries()) {
+    const tabPromises = Array.from(tabControllers.entries()).map(async ([tabId, controller]) => {
       try {
         const tab = await chrome.tabs.get(tabId);
-        controlledTabs.push({
+        return {
           id: tabId,
           title: sanitizeString(tab.title || 'Sem título'),
           domain: sanitizeString(controller.domain),
           currentGain: controller.currentGain,
           isMuted: controller.isMuted
-        });
+        };
       } catch (error) {
         console.debug(`Aba controlada ${tabId} não está mais disponível: ${formatErrorMessage(error)}`);
         tabControllers.delete(tabId);
+        return null;
       }
-    }
+    });
+
+    const results = await Promise.all(tabPromises);
+    const controlledTabs = results.filter(tab => tab !== null);
 
     sendResponse({ success: true, tabs: controlledTabs });
 
