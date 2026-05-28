@@ -23,11 +23,9 @@ Thumbs.db
 
 # Editor files
 .vscode/
-.idea/
 *.swp
 *.swo
 *.code-workspace
 
-# Agent skills (installed via npx skills)
-.agents/
-skills-lock.json
+# AI context (local, contains environment-specific paths)
+.github/copilot-instructions.md
