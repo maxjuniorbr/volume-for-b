@@ -7,6 +7,9 @@ build/
 # Configuração de produção (contém Extension ID sensível)
 build.config.js
 
+# Credenciais OAuth (nunca commitar)
+client_secret*.json
+
 # Node modules
 node_modules/
 
