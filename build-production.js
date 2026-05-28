@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 
 const DEFAULT_BUILD_CONFIG = {
   BUILD_DIR: './build',
@@ -88,7 +88,7 @@ function createZip() {
     }
 
     const output = fs.createWriteStream(ZIP_NAME);
-    const archive = archiver('zip', { zlib: { level: 9 } });
+    const archive = new ZipArchive({ zlib: { level: 9 } });
 
     output.on('close', () => {
       const sizeInMB = (archive.pointer() / 1024 / 1024).toFixed(2);
