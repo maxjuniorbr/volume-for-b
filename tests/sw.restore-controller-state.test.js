@@ -82,17 +82,18 @@ describe('restoreControllerState', () => {
     });
   });
 
-  it('mantém no estado salvo apenas abas restauradas com sucesso', async () => {
+  it('mantém abas momentaneamente inaudíveis e só remove do storage abas que não existem mais', async () => {
     const chrome = createChromeMock();
     const successfulController = { currentGain: 125 };
-    const failedController = { currentGain: 180 };
+    const inaudibleController = { currentGain: 90 };
+    const failedRestoreController = { currentGain: 180 };
 
     chrome.storage.local.get.mockResolvedValue({
       tabControllers: {
         1: successfulController,
-        2: { currentGain: 90 },
+        2: inaudibleController,
         3: { currentGain: 70 },
-        4: failedController
+        4: failedRestoreController
       }
     });
     chrome.storage.local.set.mockResolvedValue(undefined);
@@ -104,6 +105,7 @@ describe('restoreControllerState', () => {
       }
 
       if (tabId === 2) {
+        // Aba existe mas está em silêncio momentâneo: deve ser preservada.
         return { audible: false };
       }
 
@@ -123,11 +125,20 @@ describe('restoreControllerState', () => {
     await sw.restoreControllerState();
 
     expect(chrome.offscreen.createDocument).toHaveBeenCalledTimes(1);
+    // Storage reescrito apenas para podar a aba 3 (inexistente). Abas 1, 2 e 4
+    // permanecem persistidas: 4 falhou transitoriamente e deve poder ser
+    // tentada de novo no próximo wakeup do service worker.
     expect(chrome.storage.local.set).toHaveBeenCalledWith({
       tabControllers: {
-        1: successfulController
+        1: successfulController,
+        2: inaudibleController,
+        4: failedRestoreController
       }
     });
-    expect(sw.readTabControllers()).toEqual([[1, successfulController]]);
+    // Memória contém apenas as abas cuja restauração de áudio foi bem-sucedida.
+    expect(sw.readTabControllers()).toEqual([
+      [1, successfulController],
+      [2, inaudibleController]
+    ]);
   });
 });

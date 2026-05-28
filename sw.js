@@ -425,8 +425,10 @@ async function handleGetControlledTabs(sendResponse) {
           isMuted: controller.isMuted
         };
       } catch (error) {
-        console.debug(`Controlled tab ${tabId} no longer available: ${formatErrorMessage(error)}`);
-        tabControllers.delete(tabId);
+        // Falha transitória de tabs.get (ex.: race, permissão de incognito
+        // negada momentaneamente) NÃO deve apagar o controller: a remoção
+        // definitiva acontece em chrome.tabs.onRemoved.
+        console.debug(`Controlled tab ${tabId} unavailable now: ${formatErrorMessage(error)}`);
         return null;
       }
     });
@@ -552,17 +554,20 @@ async function restoreControllerState() {
       })
       .filter(Boolean);
 
+    // Só descarta do storage abas que comprovadamente não existem mais
+    // (chrome.tabs.get rejeita). Silêncio momentâneo (audible=false) NÃO é
+    // motivo para excluir: a aba ainda existe e o controller deve ser
+    // restaurado para que o popup mostre o estado real ao reabrir.
+    let prunedAny = false;
     const restorableTabs = (await Promise.all(storedControllers.map(async ({ tabId, controller }) => {
       try {
-        const tab = await chrome.tabs.get(tabId);
-        if (tab?.audible) {
-          return { tabId, controller };
-        }
+        await chrome.tabs.get(tabId);
+        return { tabId, controller };
       } catch (error) {
         console.debug(`Aba ${tabId} não existe mais, removendo do estado: ${formatErrorMessage(error)}`);
+        prunedAny = true;
+        return null;
       }
-
-      return null;
     }))).filter(Boolean);
 
     if (restorableTabs.length > 0) {
@@ -578,13 +583,25 @@ async function restoreControllerState() {
             gain: controller.currentGain
           });
         } catch (error) {
+          // Falha transitória ao falar com o offscreen: tira da memória
+          // para esta sessão do SW, mas preserva no storage para que o
+          // próximo wakeup tente restaurar de novo.
           console.debug(`Falha ao restaurar áudio da aba ${tabId}: ${formatErrorMessage(error)}`);
           tabControllers.delete(tabId);
         }
       }));
     }
 
-    await saveControllerState();
+    // Só reescreve o storage se realmente houve poda de abas inexistentes.
+    // Evita persistir uma "fotografia" volátil da memória que pode estar
+    // incompleta (ex.: falha transitória de mensagem ao offscreen).
+    if (prunedAny) {
+      const pruned = {};
+      for (const { tabId, controller } of restorableTabs) {
+        pruned[tabId] = controller;
+      }
+      await chrome.storage.local.set({ tabControllers: pruned });
+    }
   } catch (error) {
     console.error('Erro ao restaurar estado dos controladores:', error);
   }

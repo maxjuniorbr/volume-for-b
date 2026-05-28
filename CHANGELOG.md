@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.5] - 2026-05-28
+
+### Fixed
+- Service worker wakeup could reset the popup to 100% when returning to a
+  controlled tab that was momentarily silent (`audible: false`). The restore
+  logic now only discards tabs that no longer exist (`chrome.tabs.get`
+  rejects), instead of filtering by `audible`. Storage is only rewritten when
+  truly pruning non-existent tabs, preventing volatile in-memory snapshots
+  from overwriting persisted state.
+- `handleGetControlledTabs` no longer deletes controllers on transient
+  `chrome.tabs.get` errors; permanent cleanup is delegated to
+  `chrome.tabs.onRemoved`.
+
 ## [1.1.4] - 2025
 
 ### Fixed
