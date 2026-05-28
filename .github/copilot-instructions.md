@@ -1,56 +1,56 @@
-# volume-for-b — Instruções do Projeto
+# volume-for-b — Project Instructions
 
-## Visão Geral
+## Overview
 
-Extensão Chrome (Manifest V3) que controla o volume de abas individualmente.
+Chrome Extension (Manifest V3) that controls volume per individual tab.
 
 - **Extension ID**: `hpgpcipagldgjpdngfmmnfojieaiebpj`
-- **URL da loja**: https://chromewebstore.google.com/detail/volume-for-b/hpgpcipagldgjpdngfmmnfojieaiebpj
+- **Store URL**: https://chromewebstore.google.com/detail/volume-for-b/hpgpcipagldgjpdngfmmnfojieaiebpj
 - **Runtime**: Node.js v22.22.0 via nvm (`~/.nvm/versions/node/v22.22.0/`)
-- **gcloud CLI**: `~/google-cloud-sdk/bin/` — autenticado como `maxjuniorbr@gmail.com`
+- **gcloud CLI**: `~/google-cloud-sdk/bin/` — authenticated as `maxjuniorbr@gmail.com`
 - **GCP Project**: `volume-for-b`
 
-## Comandos Essenciais
+## Essential Commands
 
 ```bash
-# Testes
+# Tests
 npx vitest run
 
 # Lint
 npx eslint .
 
-# Build de produção (gera volume-for-b-production.zip)
+# Production build (generates volume-for-b-production.zip)
 node build-production.js
 ```
 
-## Arquitetura
+## Architecture
 
-| Arquivo | Função |
-|---------|--------|
-| `sw.js` | Service Worker principal (background) |
-| `popup.js/html/css` | Interface do popup |
-| `offscreen.js/html` | Documento offscreen para Web Audio API |
-| `manifest.json` | Manifesto MV3 |
-| `build-production.js` | Script de build (usa archiver v8 — `import { ZipArchive }`) |
+| File | Purpose |
+|------|---------|
+| `sw.js` | Main background service worker |
+| `popup.js/html/css` | Popup UI |
+| `offscreen.js/html` | Offscreen document for Web Audio API |
+| `manifest.json` | MV3 manifest |
+| `build-production.js` | Build script (uses archiver v8 — `import { ZipArchive }`) |
 | `eslint.config.js` | ESLint v10 flat config |
 
-## Convenções Git
+## Git Conventions
 
 - **Conventional Commits**: `feat:`, `fix:`, `perf:`, `chore:`, `docs:`, `style:`, `test:`
-- **Sem corpo** no commit — apenas subject line
-- Branch principal: `main`
+- **No commit body** — subject line only
+- Main branch: `main`
 
-## Segurança
+## Security
 
-- `build.config.js` e `client_secret*.json` são gitignored — nunca commitar
-- Credenciais ADC ficam em `~/.config/gcloud/application_default_credentials.json`
-- Nenhuma API key ou token hardcoded no código-fonte
+- `build.config.js` and `client_secret*.json` are gitignored — never commit
+- ADC credentials live at `~/.config/gcloud/application_default_credentials.json`
+- No API keys or tokens hardcoded in source code
 
-## Pipeline de Publicação
+## Publish Pipeline
 
-Ver prompt `/publish` para o fluxo completo. Resumo:
-1. Bumpar `version` em `manifest.json`
+See the `/publish` prompt for the full workflow. Summary:
+1. Bump `version` in `manifest.json`
 2. `node build-production.js`
-3. Obter token OAuth via `gcloud auth application-default print-access-token`
+3. Get OAuth token via `gcloud auth application-default print-access-token`
 4. Upload via Chrome Web Store API (PUT)
 5. Publish via Chrome Web Store API (POST)

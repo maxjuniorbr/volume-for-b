@@ -1,28 +1,28 @@
 ---
-description: "Publicar nova versão da extensão volume-for-b na Chrome Web Store. Use quando quiser fazer release, publicar, ou fazer deploy da extensão."
-argument-hint: "Descrição das mudanças (ex: 'corrige bug de volume', 'melhora performance')"
+description: "Publish a new version of the volume-for-b extension to the Chrome Web Store. Use when you want to release, publish, or deploy the extension."
+argument-hint: "Description of changes (e.g. 'fix volume bug', 'improve performance')"
 agent: "agent"
 ---
 
-# Publicar volume-for-b na Chrome Web Store
+# Publish volume-for-b to the Chrome Web Store
 
-Mudanças desta versão: $input
+Changes in this version: $input
 
-## 1. Verificar estado atual
+## 1. Check current state
 
-Confirme que os testes passam e não há nada pendente:
+Confirm tests pass and there's nothing uncommitted:
 
 ```bash
 npx vitest run
 git status
 ```
 
-## 2. Bumpar versão
+## 2. Bump version
 
-Abra [manifest.json](../manifest.json) e incremente `version` seguindo semver:
-- **patch** (x.x.N): bug fix ou melhoria interna
-- **minor** (x.N.0): nova funcionalidade
-- **major** (N.0.0): mudança incompatível
+Open [manifest.json](../manifest.json) and increment `version` following semver:
+- **patch** (x.x.N): bug fix or internal improvement
+- **minor** (x.N.0): new feature
+- **major** (N.0.0): breaking change
 
 ## 3. Build
 
@@ -30,9 +30,9 @@ Abra [manifest.json](../manifest.json) e incremente `version` seguindo semver:
 node build-production.js
 ```
 
-Confirme que `volume-for-b-production.zip` foi gerado sem erros.
+Confirm `volume-for-b-production.zip` was generated without errors.
 
-## 4. Upload para a Chrome Web Store
+## 4. Upload to the Chrome Web Store
 
 ```bash
 export PATH="$PATH:/home/maxjuniorbr/google-cloud-sdk/bin"
@@ -46,11 +46,11 @@ curl -s -X PUT \
   --data-binary @volume-for-b-production.zip | python3 -m json.tool
 ```
 
-Resposta esperada: `"uploadState": "SUCCESS"`
+Expected response: `"uploadState": "SUCCESS"`
 
-Se receber erro de token expirado, rode novamente `gcloud auth application-default login` com os escopos `chromewebstore` e `cloud-platform`.
+If you get a token expiry error, re-authenticate with `gcloud auth application-default login` using scopes `chromewebstore` and `cloud-platform`.
 
-## 5. Publicar
+## 5. Publish
 
 ```bash
 TOKEN=$(gcloud auth application-default print-access-token)
@@ -62,9 +62,9 @@ curl -s -X POST \
   -H "Content-Length: 0" | python3 -m json.tool
 ```
 
-Resposta esperada: `"status": ["OK"]`
+Expected response: `"status": ["OK"]`
 
-## 6. Commitar e fazer push
+## 6. Commit and push
 
 ```bash
 git add manifest.json
