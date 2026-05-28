@@ -12,32 +12,32 @@
 // Also stamps `html.preload` so popup.css can suppress transitions until the
 // first frame, preventing the post-paint cross-fade.
 (function initTheme() {
+  const html = document.documentElement;
+  html.classList.add('preload');
+
+  let pref = null;
   try {
-    const html = document.documentElement;
-    html.classList.add('preload');
-
-    let pref = null;
-    try {
-      pref = localStorage.getItem('darkMode');
-    } catch (_storageBlocked) {
-      pref = null;
+    pref = globalThis.localStorage?.getItem('darkMode') ?? null;
+  } catch (storageError) {
+    // localStorage can throw in private/locked-down contexts. Fall back to
+    // system preference; logging here is harmless if console is missing.
+    if (globalThis.console) {
+      globalThis.console.debug('theme-init: localStorage unavailable', storageError);
     }
+  }
 
-    let isDark;
-    if (pref === 'true') {
-      isDark = true;
-    } else if (pref === 'false') {
-      isDark = false;
-    } else if (window.matchMedia) {
-      isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    } else {
-      isDark = true;
-    }
+  let isDark;
+  if (pref === 'true') {
+    isDark = true;
+  } else if (pref === 'false') {
+    isDark = false;
+  } else if (globalThis.matchMedia) {
+    isDark = globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
+  } else {
+    isDark = true;
+  }
 
-    if (isDark) {
-      html.classList.add('dark-mode');
-    }
-  } catch (_err) {
-    // Best-effort only — leave default light theme on hard failure.
+  if (isDark) {
+    html.classList.add('dark-mode');
   }
 })();

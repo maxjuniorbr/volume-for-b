@@ -319,7 +319,7 @@ async function updateTabsList() {
 function renderTabsList(tabs) {
   // Limpa de forma segura (sem innerHTML).
   while (tabsList.firstChild) {
-    tabsList.removeChild(tabsList.firstChild);
+    tabsList.firstChild.remove();
   }
 
   if (tabs.length === 0) {
@@ -594,8 +594,8 @@ async function loadDarkModePreference() {
     document.documentElement.classList.toggle('dark-mode', isDarkMode);
     try {
       localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
-    } catch (_storageBlocked) {
-      // ignore
+    } catch (storageError) {
+      console.debug('localStorage indisponível ao espelhar dark mode:', storageError);
     }
     darkModeToggle.setAttribute('aria-pressed', isDarkMode ? 'true' : 'false');
   } catch (error) {
@@ -612,8 +612,8 @@ function toggleDarkMode() {
 async function saveDarkModePreference(isDarkMode) {
   try {
     localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
-  } catch (_storageBlocked) {
-    // ignore
+  } catch (storageError) {
+    console.debug('localStorage indisponível ao salvar dark mode:', storageError);
   }
   try {
     await chrome.storage.local.set({ darkMode: isDarkMode });
