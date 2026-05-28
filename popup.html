@@ -1,78 +1,95 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Volume for B</title>
+  <script src="theme-init.js"></script>
   <link rel="stylesheet" href="popup.css">
 </head>
 
 <body>
-  <div class="header">
+  <header class="header">
     <div class="header-content">
       <div class="title-section">
-        <img src="icons/vfb48.png" alt="Volume for B" class="app-icon">
+        <img src="icons/vfb48.png" alt="" class="app-icon">
         <h1 data-i18n="appTitle">Volume for B</h1>
       </div>
-      <button class="dark-mode-toggle" id="darkModeToggle" data-i18n-title="ariaToggleDarkMode"
-        data-i18n-aria="ariaToggleDarkMode" title="Alternar modo escuro/claro" aria-label="Alternar modo escuro/claro"
-        role="switch" aria-checked="false">
-        <div class="toggle-switch">
-          <div class="toggle-slider"></div>
-        </div>
-        <span class="toggle-label" aria-hidden="true">🌙</span>
+      <button class="dark-mode-toggle" id="darkModeToggle" type="button"
+        data-i18n-title="ariaToggleDarkMode" data-i18n-aria="ariaToggleDarkMode"
+        title="Alternar modo escuro/claro" aria-label="Alternar modo escuro/claro"
+        aria-pressed="false">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+        </svg>
       </button>
     </div>
     <p data-i18n="selectTabInstruction">Selecione uma aba com áudio abaixo e clique em "Iniciar".</p>
-  </div>
+  </header>
 
   <output class="message-area" aria-live="polite">
     <div id="errorMessage" class="error-message" role="alert"></div>
-    <output id="successMessage" class="success-message"></output>
+    <div id="successMessage" class="success-message"></div>
   </output>
 
-  <div class="control-section">
-    <fieldset class="control-buttons" data-i18n-aria="ariaVolumeControls" aria-label="Controles de volume">
-      <button id="startBtn" class="btn btn-primary" data-i18n="btnStart" data-i18n-aria="ariaStartControl"
-        aria-label="Iniciar controle de volume">Iniciar</button>
-      <button id="stopBtn" class="btn btn-danger" disabled data-i18n="btnStop" data-i18n-aria="ariaStopControl"
-        aria-label="Parar controle de volume">Parar</button>
-      <button id="muteBtn" class="btn btn-secondary" disabled data-i18n="btnMute" data-i18n-aria="ariaToggleMute"
-        aria-label="Alternar mudo">Mute</button>
-      <button id="resetBtn" class="btn btn-secondary" disabled data-i18n="btnReset" data-i18n-title="ariaResetVolume"
-        data-i18n-aria="ariaResetVolume" title="Resetar volume para 100%"
-        aria-label="Resetar volume para 100%">Reset</button>
-    </fieldset>
-
+  <section class="control-section">
     <div class="volume-control">
       <div class="volume-label">
-        <label for="volumeSlider" data-i18n="labelVolume">Volume:</label>
+        <label for="volumeSlider" data-i18n="labelVolume">Volume</label>
         <span id="volumeValue" class="volume-value">100%</span>
       </div>
-      <input type="range" id="volumeSlider" class="volume-slider" min="0" max="600" value="100" disabled
+      <input type="range" id="volumeSlider" class="volume-slider" min="0" max="600" value="100" step="1" disabled
         aria-valuemin="0" aria-valuemax="600" aria-valuenow="100" data-i18n-aria="ariaAdjustVolume"
         aria-label="Ajustar volume">
+      <div class="volume-scale" aria-hidden="true">
+        <span>0</span>
+        <span>600%</span>
+      </div>
     </div>
 
-    <div id="domainInfo" class="domain-info" style="display: none;" aria-live="polite">
+    <fieldset class="control-buttons" data-i18n-aria="ariaVolumeControls" aria-label="Controles de volume">
+      <button id="startBtn" class="btn btn-primary" type="button" disabled
+        data-i18n="btnStart" data-i18n-aria="ariaStartControl"
+        aria-label="Iniciar controle de volume">Iniciar</button>
+      <button id="stopBtn" class="btn btn-danger" type="button" disabled
+        data-i18n="btnStop" data-i18n-aria="ariaStopControl"
+        aria-label="Parar controle de volume">Parar</button>
+      <button id="muteBtn" class="btn btn-secondary" type="button" disabled
+        data-i18n="btnMute" data-i18n-aria="ariaToggleMute"
+        aria-label="Alternar mudo">Mute</button>
+      <button id="resetBtn" class="btn btn-secondary" type="button" disabled
+        data-i18n="btnReset" data-i18n-title="ariaResetVolume" data-i18n-aria="ariaResetVolume"
+        title="Resetar volume para 100%" aria-label="Resetar volume para 100%">Reset</button>
+    </fieldset>
+
+    <div id="domainInfo" class="domain-info is-hidden" aria-live="polite">
       <span data-i18n="labelDomain">Domínio:</span> <span id="currentDomain"></span>
     </div>
-  </div>
+  </section>
 
-  <div class="control-section">
+  <section class="control-section">
     <div class="tabs-section">
-      <h3><span data-i18n="tabsWithAudio">Abas com Áudio</span> <span class="tabs-hint" data-i18n="tabsHint">(clique
-          para navegar)</span></h3>
+      <h3>
+        <span data-i18n="tabsWithAudio">Abas com áudio</span>
+        <span class="tabs-hint" data-i18n="tabsHint">clique para navegar</span>
+      </h3>
       <ul id="tabsList" class="tabs-list" data-i18n-aria="ariaTabsList"
         aria-label="Lista de abas com áudio">
-        <li class="loading"><output data-i18n="loadingTabs">Carregando abas...</output></li>
+        <li class="loading" data-i18n="loadingTabs">Carregando abas...</li>
       </ul>
     </div>
-  </div>
+  </section>
 
-  <script src="popup.js"></script>
   <footer class="footer">by Dianin</footer>
+  <script src="constants.js"></script>
+  <script src="popup.js"></script>
 </body>
 
 </html>

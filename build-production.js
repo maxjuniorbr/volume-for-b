@@ -41,6 +41,8 @@ function copyFiles() {
 
   const filesToCopy = [
     'manifest.json',
+    'constants.js',
+    'theme-init.js',
     'popup.html',
     'popup.css',
     'popup.js',
@@ -109,7 +111,7 @@ function validateBuild() {
   console.log('📋 Validando build...');
 
   const requiredFiles = [
-    'manifest.json', 'popup.html', 'popup.css', 'popup.js',
+    'manifest.json', 'constants.js', 'theme-init.js', 'popup.html', 'popup.css', 'popup.js',
     'sw.js', 'offscreen.html', 'offscreen.js', 'icons', '_locales'
   ];
 

@@ -1,6 +1,12 @@
+// Load shared constants and helpers (single source of truth across SW, popup
+// and offscreen). Must be the first statement: importScripts is synchronous
+// and only available before any await in module-less service workers.
+importScripts('constants.js');
+
 const tabControllers = new Map();
 let offscreenCreated = false;
 let popupIsOpen = false;
+let stateRestored = false;
 
 function formatErrorMessage(error) {
   if (error instanceof Error && error.message) {
@@ -10,33 +16,69 @@ function formatErrorMessage(error) {
   return String(error);
 }
 
-// Função de sanitização para prevenir XSS
-function sanitizeString(input) {
+// Validação estrutural de hostname para evitar persistir lixo no storage.
+// Aceita apenas hostnames válidos (RFC 1123 simplificado) ou IPv4.
+const HOSTNAME_RE = /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/i;
+
+function isValidHostname(input) {
+  return typeof input === 'string' && input.length >= 1 && input.length <= 253 && HOSTNAME_RE.test(input);
+}
+
+// Cap user-supplied strings (tab titles) to a defensive size before exposing
+// them to the popup, so a pathological page cannot break the layout.
+function clipString(input, max = TAB_TITLE_MAX) {
   if (typeof input !== 'string') {
     return '';
   }
-  return input
-    .replaceAll(/[<>'"&]/g, function (match) {
-      return {
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;',
-        '&': '&amp;'
-      }[match];
-    })
-    .trim()
-    .substring(0, 500); // Limita tamanho para prevenir overflow
+  return input.length > max ? input.slice(0, max) : input;
 }
 
-chrome.runtime.onStartup.addListener(restoreControllerState);
-chrome.runtime.onInstalled.addListener(async () => {
+// Aceita mensagens apenas de componentes da própria extensão.
+function isFromOwnExtension(sender) {
+  return Boolean(sender) && sender.id === chrome.runtime.id;
+}
+
+// Restaura o estado em memória a partir do storage. Idempotente: roda na
+// primeira mensagem após o SW acordar do idle, sem precisar do onStartup.
+async function ensureStateRestored() {
+  if (stateRestored) {
+    return;
+  }
+  stateRestored = true;
   await restoreControllerState();
+}
+
+chrome.runtime.onStartup.addListener(async () => {
+  await ensureStateRestored();
+});
+
+chrome.runtime.onInstalled.addListener(async () => {
+  await ensureStateRestored();
   await cleanupOldDomains();
+  await scheduleCleanupAlarm();
 });
 
 // Limpar domínios não acessados há mais de 30 dias
-const DOMAIN_MAX_AGE_DAYS = 30;
+
+async function scheduleCleanupAlarm() {
+  try {
+    const existing = await chrome.alarms.get(CLEANUP_ALARM_NAME);
+    if (!existing) {
+      chrome.alarms.create(CLEANUP_ALARM_NAME, {
+        delayInMinutes: CLEANUP_PERIOD_MINUTES,
+        periodInMinutes: CLEANUP_PERIOD_MINUTES
+      });
+    }
+  } catch (error) {
+    console.debug(`Falha ao agendar alarm de cleanup: ${formatErrorMessage(error)}`);
+  }
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === CLEANUP_ALARM_NAME) {
+    cleanupOldDomains();
+  }
+});
 
 async function cleanupOldDomains() {
   try {
@@ -47,14 +89,13 @@ async function cleanupOldDomains() {
     const migrations = {};
 
     for (const [key, value] of Object.entries(storage)) {
-      if (key.startsWith('domain_')) {
-        // Se o valor é um objeto com lastAccessed, verificar idade
+      if (key.startsWith(DOMAIN_KEY_PREFIX)) {
         if (typeof value === 'object' && value.lastAccessed) {
           if (now - value.lastAccessed > maxAgeMs) {
             keysToRemove.push(key);
           }
         } else if (typeof value === 'number') {
-          // Se é valor legado (número apenas), migrar para novo formato
+          // Migra formato legado (número) para novo formato (objeto).
           migrations[key] = { gain: value, lastAccessed: now };
         }
       }
@@ -66,7 +107,6 @@ async function cleanupOldDomains() {
 
     if (keysToRemove.length > 0) {
       await chrome.storage.local.remove(keysToRemove);
-      console.log(`Cleanup: removidos ${keysToRemove.length} domínios antigos`);
     }
   } catch (error) {
     console.error('Erro ao limpar domínios antigos:', error);
@@ -81,7 +121,6 @@ chrome.tabs.onUpdated.addListener((_tabId, changeInfo, _tab) => {
 
 chrome.tabs.onRemoved.addListener(async (tabId, _removeInfo) => {
   if (tabControllers.has(tabId)) {
-    // Parar processamento de áudio no offscreen
     chrome.runtime.sendMessage({
       action: 'stopProcessing',
       tabId
@@ -96,7 +135,20 @@ chrome.tabs.onRemoved.addListener(async (tabId, _removeInfo) => {
   }
 });
 
+// Antes do SW desligar, tenta restaurar o estado mute original das abas
+// controladas para que o usuário não fique com a aba mutada caso a extensão
+// seja desabilitada ou desinstalada com o navegador aberto.
+chrome.runtime.onSuspend.addListener(() => {
+  for (const [tabId, controller] of tabControllers) {
+    chrome.tabs.update(tabId, { muted: controller.originalMuted }).catch(() => { });
+  }
+});
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (!isFromOwnExtension(sender)) {
+    return false;
+  }
+
   const { action } = message;
 
   const handlers = {
@@ -107,120 +159,157 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     'getAudibleTabs': () => handleGetAudibleTabs(sendResponse),
     'getControlledTabs': () => handleGetControlledTabs(sendResponse),
     'getDomainGain': () => handleGetDomainGain(message.domain, sendResponse),
-    'saveDomainGain': () => handleSaveDomainGain(message.domain, message.gain, sendResponse),
-    'popupOpened': () => handlePopupOpened(sendResponse),
-    'popupClosed': () => handlePopupClosed(sendResponse)
+    'saveDomainGain': () => handleSaveDomainGain(message.domain, message.gain, sendResponse)
   };
 
   if (handlers[action]) {
-    handlers[action]();
+    // Restaura estado de forma preguiçosa caso o SW tenha acordado do idle.
+    ensureStateRestored().then(() => handlers[action]()).catch((error) => {
+      console.error('Erro ao processar mensagem:', formatErrorMessage(error));
+      sendResponse({ success: false, error: ErrorCodes.INTERNAL });
+    });
     return true;
   }
+
+  return false;
+});
+
+// Detecta abertura/fechamento do popup via Port (mais confiável que beforeunload).
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.sender?.id !== chrome.runtime.id || port.name !== POPUP_PORT_NAME) {
+    return;
+  }
+  popupIsOpen = true;
+  port.onDisconnect.addListener(() => {
+    popupIsOpen = false;
+  });
 });
 
 async function handleStartVolumeControl(tabId, sendResponse) {
   try {
-    // Se já está sendo controlada, apenas retorna sucesso com as configurações atuais
-    if (tabControllers.has(tabId)) {
-      const controller = tabControllers.get(tabId);
+    const cached = tabControllers.get(tabId);
+    if (cached) {
       sendResponse({
         success: true,
-        domain: controller.domain,
-        defaultGain: controller.currentGain
+        domain: cached.domain,
+        defaultGain: cached.currentGain
       });
       return;
     }
 
     const tab = await chrome.tabs.get(tabId);
     if (!tab.audible) {
-      sendResponse({ success: false, error: 'Aba não está reproduzindo áudio' });
+      sendResponse({ success: false, error: ErrorCodes.TAB_NOT_AUDIBLE });
       return;
     }
 
     await ensureOffscreenCreated();
 
-    // Verificar se o offscreen já tem um processador para esta aba
-    // Se sim, apenas reutilizar em vez de criar novo stream
-    let processResult;
-    try {
-      processResult = await chrome.runtime.sendMessage({
-        action: 'checkProcessor',
-        tabId
-      });
-    } catch (error) {
-      console.debug(`Falha ao consultar processador existente da aba ${tabId}: ${formatErrorMessage(error)}`);
-      processResult = { exists: false };
+    const safeDomain = extractSafeHostname(tab.url);
+    const initialGain = await resolveInitialGain(safeDomain);
+
+    const result = await acquireProcessor(tabId, initialGain);
+    if (!result.success) {
+      sendResponse({ success: false, error: result.error });
+      return;
     }
 
-    const domain = new URL(tab.url).hostname;
-    const domainGain = await getDomainGainFromStorage(domain);
-
-    if (processResult?.exists) {
-      // Reutilizar processador existente
-      await chrome.runtime.sendMessage({
-        action: 'setGain',
-        tabId,
-        gain: domainGain || 100
-      });
-    } else {
-      // Criar novo processador
-      const mediaStreamId = await chrome.tabCapture.getMediaStreamId({
-        targetTabId: tabId
-      });
-
-      await chrome.tabs.update(tabId, { muted: true });
-
-      await chrome.runtime.sendMessage({
-        action: 'processAudio',
-        tabId,
-        mediaStreamId,
-        gain: domainGain || 100
-      });
-    }
-
-    tabControllers.set(tabId, {
-      domain,
-      originalMuted: tab.mutedInfo.muted,
-      currentGain: domainGain || 100,
-      isMuted: false
-    });
-
+    registerController(tabId, safeDomain, tab.mutedInfo.muted, initialGain);
     await saveControllerState();
 
-    sendResponse({
-      success: true,
-      domain,
-      defaultGain: domainGain || 100
-    });
-
+    sendResponse({ success: true, domain: safeDomain, defaultGain: initialGain });
   } catch (error) {
-    // Se o erro é de stream ativo, tentar reconectar
     if (error.message?.includes('active stream')) {
-      try {
-        const tab = await chrome.tabs.get(tabId);
-        const domain = new URL(tab.url).hostname;
-        const domainGain = await getDomainGainFromStorage(domain);
-
-        tabControllers.set(tabId, {
-          domain,
-          originalMuted: tab.mutedInfo.muted,
-          currentGain: domainGain || 100,
-          isMuted: false
-        });
-
-        await saveControllerState();
-
-        sendResponse({
-          success: true,
-          domain,
-          defaultGain: domainGain || 100
-        });
+      const recovered = await recoverFromActiveStream(tabId);
+      if (recovered) {
+        sendResponse(recovered);
         return;
-      } catch (_e) {
-        console.debug('Fallback de reconexão falhou:', _e.message);
       }
     }
+
     sendResponse({ success: false, error: error.message });
+  }
+}
+
+function extractSafeHostname(url) {
+  try {
+    const hostname = new URL(url).hostname;
+    return isValidHostname(hostname) ? hostname : '';
+  } catch {
+    return '';
+  }
+}
+
+async function resolveInitialGain(safeDomain) {
+  if (!safeDomain) {
+    return VOLUME_DEFAULT;
+  }
+  const stored = await getDomainGainFromStorage(safeDomain);
+  return stored || VOLUME_DEFAULT;
+}
+
+function registerController(tabId, domain, originalMuted, currentGain) {
+  tabControllers.set(tabId, {
+    domain,
+    originalMuted,
+    currentGain,
+    isMuted: false
+  });
+}
+
+async function checkExistingProcessor(tabId) {
+  try {
+    const result = await chrome.runtime.sendMessage({ action: 'checkProcessor', tabId });
+    return Boolean(result?.exists);
+  } catch (error) {
+    console.debug(`Falha ao consultar processador existente da aba ${tabId}: ${formatErrorMessage(error)}`);
+    return false;
+  }
+}
+
+async function acquireProcessor(tabId, gain) {
+  const existing = await checkExistingProcessor(tabId);
+
+  if (existing) {
+    await chrome.runtime.sendMessage({ action: 'setGain', tabId, gain });
+    return { success: true };
+  }
+
+  let mutedByUs = false;
+  try {
+    const mediaStreamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tabId });
+    await chrome.tabs.update(tabId, { muted: true });
+    mutedByUs = true;
+    await chrome.runtime.sendMessage({ action: 'processAudio', tabId, mediaStreamId, gain });
+    return { success: true };
+  } catch (error) {
+    if (mutedByUs) {
+      try {
+        await chrome.tabs.update(tabId, { muted: false });
+      } catch { /* aba pode ter sido fechada */ }
+    }
+    throw error;
+  }
+}
+
+async function recoverFromActiveStream(tabId) {
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    const safeDomain = extractSafeHostname(tab.url);
+    const targetGain = await resolveInitialGain(safeDomain);
+
+    const reuse = await chrome.runtime.sendMessage({ action: 'setGain', tabId, gain: targetGain });
+    if (!reuse?.success) {
+      throw new Error(reuse?.error || ErrorCodes.NO_PROCESSOR);
+    }
+
+    registerController(tabId, safeDomain, tab.mutedInfo.muted, targetGain);
+    await saveControllerState();
+
+    return { success: true, domain: safeDomain, defaultGain: targetGain };
+  } catch (fallbackError) {
+    console.debug('Fallback de reconexão falhou:', formatErrorMessage(fallbackError));
+    return null;
   }
 }
 
@@ -228,7 +317,7 @@ async function handleStopVolumeControl(tabId, sendResponse) {
   try {
     const controller = tabControllers.get(tabId);
     if (!controller) {
-      sendResponse({ success: false, error: 'Aba não está sendo controlada' });
+      sendResponse({ success: false, error: ErrorCodes.TAB_NOT_CONTROLLED });
       return;
     }
 
@@ -253,13 +342,11 @@ async function handleSetVolume(tabId, volume, sendResponse) {
   try {
     const controller = tabControllers.get(tabId);
     if (!controller) {
-      sendResponse({ success: false, error: 'Aba não está sendo controlada' });
+      sendResponse({ success: false, error: ErrorCodes.TAB_NOT_CONTROLLED });
       return;
     }
 
-    // Validação de volume - usar Number.isNaN para aceitar 0 corretamente
-    const parsed = Number.parseInt(volume, 10);
-    const validVolume = Math.max(0, Math.min(600, Number.isNaN(parsed) ? 100 : parsed));
+    const validVolume = clampVolume(volume);
 
     await chrome.runtime.sendMessage({
       action: 'setGain',
@@ -279,7 +366,7 @@ async function handleMuteTab(tabId, muted, sendResponse) {
   try {
     const controller = tabControllers.get(tabId);
     if (!controller) {
-      sendResponse({ success: false, error: 'Aba não está sendo controlada' });
+      sendResponse({ success: false, error: ErrorCodes.TAB_NOT_CONTROLLED });
       return;
     }
 
@@ -301,21 +388,19 @@ async function handleGetAudibleTabs(sendResponse) {
   try {
     const tabs = await chrome.tabs.query({ audible: true });
     const audibleTabs = tabs.map(tab => {
-      // Validação e sanitização de URL
-      let domain;
+      let domain = '';
       try {
         const url = new URL(tab.url);
         domain = url.hostname;
       } catch (error) {
-        console.debug(`URL inválida para a aba ${tab.id}: ${formatErrorMessage(error)}`);
-        domain = 'unknown';
+        console.debug(`Invalid tab URL for tab ${tab.id}: ${formatErrorMessage(error)}`);
       }
 
       return {
         id: tab.id,
-        title: sanitizeString(tab.title || 'Sem título'),
-        url: tab.url,
-        domain: sanitizeString(domain),
+        title: clipString(tab.title || ''),
+        domain: isValidHostname(domain) ? domain : '',
+        favIconUrl: tab.favIconUrl || '',
         controlled: tabControllers.has(tab.id)
       };
     });
@@ -334,13 +419,13 @@ async function handleGetControlledTabs(sendResponse) {
         const tab = await chrome.tabs.get(tabId);
         return {
           id: tabId,
-          title: sanitizeString(tab.title || 'Sem título'),
-          domain: sanitizeString(controller.domain),
+          title: clipString(tab.title || ''),
+          domain: controller.domain || '',
           currentGain: controller.currentGain,
           isMuted: controller.isMuted
         };
       } catch (error) {
-        console.debug(`Aba controlada ${tabId} não está mais disponível: ${formatErrorMessage(error)}`);
+        console.debug(`Controlled tab ${tabId} no longer available: ${formatErrorMessage(error)}`);
         tabControllers.delete(tabId);
         return null;
       }
@@ -358,14 +443,13 @@ async function handleGetControlledTabs(sendResponse) {
 
 async function handleGetDomainGain(domain, sendResponse) {
   try {
-    const sanitizedDomain = sanitizeString(domain);
-    if (!sanitizedDomain || sanitizedDomain.length < 3) {
-      sendResponse({ success: true, gain: 100 });
+    if (!isValidHostname(domain)) {
+      sendResponse({ success: true, gain: VOLUME_DEFAULT });
       return;
     }
 
-    const gain = await getDomainGainFromStorage(sanitizedDomain);
-    sendResponse({ success: true, gain: gain || 100 });
+    const gain = await getDomainGainFromStorage(domain);
+    sendResponse({ success: true, gain: gain || VOLUME_DEFAULT });
   } catch (error) {
     sendResponse({ success: false, error: error.message });
   }
@@ -373,19 +457,15 @@ async function handleGetDomainGain(domain, sendResponse) {
 
 async function handleSaveDomainGain(domain, gain, sendResponse) {
   try {
-    // Validação de entrada - usar Number.isNaN para aceitar 0 corretamente
-    const sanitizedDomain = sanitizeString(domain);
-    const parsedGain = Number.parseInt(gain, 10);
-    const validGain = Math.max(0, Math.min(600, Number.isNaN(parsedGain) ? 100 : parsedGain));
-
-    if (!sanitizedDomain || sanitizedDomain.length < 3) {
-      sendResponse({ success: false, error: 'Domínio inválido' });
+    if (!isValidHostname(domain)) {
+      sendResponse({ success: false, error: ErrorCodes.INVALID_DOMAIN });
       return;
     }
 
-    // Salvar com timestamp de último acesso para cleanup futuro
+    const validGain = clampVolume(gain);
+
     await chrome.storage.local.set({
-      [`domain_${sanitizedDomain}`]: {
+      [`${DOMAIN_KEY_PREFIX}${domain}`]: {
         gain: validGain,
         lastAccessed: Date.now()
       }
@@ -418,34 +498,20 @@ async function ensureOffscreenCreated() {
 }
 
 async function getDomainGainFromStorage(domain) {
-  const result = await chrome.storage.local.get([`domain_${domain}`]);
-  const value = result[`domain_${domain}`];
+  const key = `${DOMAIN_KEY_PREFIX}${domain}`;
+  const result = await chrome.storage.local.get([key]);
+  const value = result[key];
 
   // Suporte a formato legado (número) e novo formato (objeto com gain/lastAccessed)
   if (typeof value === 'object' && value !== null) {
     return value.gain;
   }
-  return value; // formato legado ou undefined
+  return value;
 }
 
-// Funções para gerenciar estado do popup
-function handlePopupOpened(sendResponse) {
-  popupIsOpen = true;
-  sendResponse({ success: true });
-}
-
-function handlePopupClosed(sendResponse) {
-  popupIsOpen = false;
-  if (sendResponse) {
-    sendResponse({ success: true });
-  }
-}
-
-// Notificar popup sobre mudanças nas abas
 function notifyPopupTabsUpdated() {
   if (popupIsOpen) {
     chrome.runtime.sendMessage({ action: 'tabsUpdated' }).catch(() => {
-      // Popup pode ter fechado, atualizar estado
       popupIsOpen = false;
     });
   }
@@ -470,54 +536,55 @@ async function restoreControllerState() {
   try {
     const result = await chrome.storage.local.get(['tabControllers']);
 
-    if (result.tabControllers) {
-      const storedControllers = Object.entries(result.tabControllers)
-        .map(([tabId, controller]) => {
-          const validTabId = Number.parseInt(tabId, 10);
+    if (!result.tabControllers) {
+      return;
+    }
 
-          if (Number.isNaN(validTabId)) {
-            console.log(`ID de aba inválido no estado salvo: ${tabId}`);
-            return null;
-          }
+    const storedControllers = Object.entries(result.tabControllers)
+      .map(([tabId, controller]) => {
+        const validTabId = Number.parseInt(tabId, 10);
 
-          return { tabId: validTabId, controller };
-        })
-        .filter(Boolean);
-
-      const restorableTabs = (await Promise.all(storedControllers.map(async ({ tabId, controller }) => {
-        try {
-          const tab = await chrome.tabs.get(tabId);
-          if (tab?.audible) {
-            return { tabId, controller };
-          }
-        } catch (error) {
-          console.log(`Aba ${tabId} não existe mais, removendo do estado: ${formatErrorMessage(error)}`);
+        if (Number.isNaN(validTabId)) {
+          return null;
         }
 
-        return null;
-      }))).filter(Boolean);
+        return { tabId: validTabId, controller };
+      })
+      .filter(Boolean);
 
-      if (restorableTabs.length > 0) {
-        await ensureOffscreenCreated();
-
-        await Promise.all(restorableTabs.map(async ({ tabId, controller }) => {
-          tabControllers.set(tabId, controller);
-
-          try {
-            await chrome.runtime.sendMessage({
-              action: 'restoreAudio',
-              tabId,
-              gain: controller.currentGain
-            });
-          } catch (error) {
-            console.debug(`Falha ao restaurar áudio da aba ${tabId}: ${formatErrorMessage(error)}`);
-            tabControllers.delete(tabId);
-          }
-        }));
+    const restorableTabs = (await Promise.all(storedControllers.map(async ({ tabId, controller }) => {
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        if (tab?.audible) {
+          return { tabId, controller };
+        }
+      } catch (error) {
+        console.debug(`Aba ${tabId} não existe mais, removendo do estado: ${formatErrorMessage(error)}`);
       }
 
-      await saveControllerState();
+      return null;
+    }))).filter(Boolean);
+
+    if (restorableTabs.length > 0) {
+      await ensureOffscreenCreated();
+
+      await Promise.all(restorableTabs.map(async ({ tabId, controller }) => {
+        tabControllers.set(tabId, controller);
+
+        try {
+          await chrome.runtime.sendMessage({
+            action: 'restoreAudio',
+            tabId,
+            gain: controller.currentGain
+          });
+        } catch (error) {
+          console.debug(`Falha ao restaurar áudio da aba ${tabId}: ${formatErrorMessage(error)}`);
+          tabControllers.delete(tabId);
+        }
+      }));
     }
+
+    await saveControllerState();
   } catch (error) {
     console.error('Erro ao restaurar estado dos controladores:', error);
   }

@@ -12,11 +12,30 @@ export default [
       sourceType: 'module',
       globals: {
         ...globals.browser,
-        chrome: 'readonly'
+        chrome: 'readonly',
+        // Globals provided by constants.js (loaded via importScripts/<script>)
+        VOLUME_MIN: 'readonly',
+        VOLUME_MAX: 'readonly',
+        VOLUME_DEFAULT: 'readonly',
+        DOMAIN_MAX_AGE_DAYS: 'readonly',
+        DOMAIN_KEY_PREFIX: 'readonly',
+        CLEANUP_ALARM_NAME: 'readonly',
+        CLEANUP_PERIOD_MINUTES: 'readonly',
+        POPUP_PORT_NAME: 'readonly',
+        SEND_MESSAGE_RETRIES: 'readonly',
+        SEND_MESSAGE_BASE_DELAY_MS: 'readonly',
+        ERROR_TOAST_MS: 'readonly',
+        SUCCESS_TOAST_MS: 'readonly',
+        TAB_TITLE_MAX: 'readonly',
+        FAVICON_URL_MAX: 'readonly',
+        ErrorCodes: 'readonly',
+        clampVolume: 'readonly',
+        // SW-specific
+        importScripts: 'readonly'
       }
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
       'no-console': 'off',
       'prefer-const': 'error',
       'no-var': 'error',
@@ -38,6 +57,14 @@ export default [
         ...globals.node,
         ...globals.es2022
       }
+    }
+  },
+  {
+    // constants.js exposes top-level identifiers as globals via importScripts
+    // and <script> tag inclusion. ESLint cannot see those cross-file uses.
+    files: ['constants.js'],
+    rules: {
+      'no-unused-vars': 'off'
     }
   }
 ];

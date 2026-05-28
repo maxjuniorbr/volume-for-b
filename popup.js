@@ -1,6 +1,7 @@
 let currentTabId = null;
 let isControlling = false;
 let isMuted = false;
+let isCurrentTabAudible = false;
 
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
@@ -18,10 +19,17 @@ const darkModeToggle = document.getElementById('darkModeToggle');
 document.addEventListener('DOMContentLoaded', async () => {
   applyI18n();
   setupEventListeners();
-  await loadInitialState();
   await loadDarkModePreference();
+  await loadInitialState();
   await updateTabsList();
   setupTabsUpdateListener();
+
+  // Release the anti-flash transition lock after the first paint settles.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.remove('preload');
+    });
+  });
 });
 
 // Aplicar internacionalização aos elementos
@@ -63,6 +71,19 @@ function i18n(key, fallback = '') {
   return chrome.i18n.getMessage(key) || fallback;
 }
 
+// Map service-worker error codes to localized, user-facing strings.
+function translateError(code) {
+  const map = {
+    [ErrorCodes.TAB_NOT_AUDIBLE]: i18n('errTabNotAudible', 'This tab is not playing audio'),
+    [ErrorCodes.TAB_NOT_CONTROLLED]: i18n('errTabNotControlled', 'Volume control is not active for this tab'),
+    [ErrorCodes.INVALID_DOMAIN]: i18n('errInvalidDomain', 'Invalid domain'),
+    [ErrorCodes.NO_PROCESSOR]: i18n('errNoProcessor', 'Audio processor unavailable'),
+    [ErrorCodes.CAPTURE_FAILED]: i18n('errCaptureFailed', 'Could not capture tab audio'),
+    [ErrorCodes.INTERNAL]: i18n('errInternal', 'Something went wrong. Please try again.')
+  };
+  return map[code] || i18n('errInternal', 'Something went wrong. Please try again.');
+}
+
 function setupEventListeners() {
   startBtn.addEventListener('click', async () => {
     if (!currentTabId) {
@@ -81,12 +102,12 @@ function setupEventListeners() {
   });
 
   volumeSlider.addEventListener('input', (e) => {
-    const volume = Number.parseInt(e.target.value);
+    const volume = Number.parseInt(e.target.value, 10);
     volumeValue.textContent = `${volume}%`;
   });
 
   volumeSlider.addEventListener('change', async (e) => {
-    const volume = Number.parseInt(e.target.value);
+    const volume = Number.parseInt(e.target.value, 10);
     await setVolume(volume);
   });
 
@@ -94,9 +115,9 @@ function setupEventListeners() {
     if (!isControlling) {
       return;
     }
-    await setVolume(100);
-    volumeSlider.value = 100;
-    volumeValue.textContent = '100%';
+    await setVolume(VOLUME_DEFAULT);
+    volumeSlider.value = VOLUME_DEFAULT;
+    volumeValue.textContent = `${VOLUME_DEFAULT}%`;
   });
 
   darkModeToggle.addEventListener('click', () => {
@@ -106,7 +127,7 @@ function setupEventListeners() {
   tabsList.addEventListener('click', (event) => {
     const item = event.target.closest('.tab-item');
     if (item && tabsList.contains(item)) {
-      const tabId = Number.parseInt(item.dataset.tabId);
+      const tabId = Number.parseInt(item.dataset.tabId, 10);
       selectTab(tabId);
     }
   });
@@ -118,15 +139,20 @@ async function loadInitialState() {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tabs.length > 0) {
       currentTabId = tabs[0].id;
+      isCurrentTabAudible = tabs[0].audible === true;
     }
 
     const response = await sendMessage({ action: 'getControlledTabs' });
-    if (response.success && response.tabs.length > 0) {
-      const controlledTab = response.tabs.find(tab => tab.id === currentTabId);
-      if (controlledTab) {
-        updateControlState(true, controlledTab.currentGain, controlledTab.isMuted);
-        showDomainInfo(controlledTab.domain);
-      }
+    const controlledTab = response.success
+      ? response.tabs.find(tab => tab.id === currentTabId)
+      : null;
+
+    if (controlledTab) {
+      updateControlState(true, controlledTab.currentGain, controlledTab.isMuted);
+      showDomainInfo(controlledTab.domain);
+    } else {
+      // Garante que o botão Iniciar reflita a audibilidade da aba atual
+      updateControlState(false, VOLUME_DEFAULT, false);
     }
 
   } catch (error) {
@@ -145,20 +171,20 @@ async function startVolumeControl() {
     });
 
     if (response.success) {
-      updateControlState(true, response.defaultGain || 100, false);
+      updateControlState(true, response.defaultGain || VOLUME_DEFAULT, false);
       showDomainInfo(response.domain);
       showSuccess(i18n('msgVolumeStarted', 'Controle de volume iniciado!'));
       await updateTabsList();
     } else {
-      updateControlState(false, 100, false);
+      updateControlState(false, VOLUME_DEFAULT, false);
       hideDomainInfo();
-      showError(response.error || i18n('msgCommunicationError', 'Erro ao iniciar controle de volume'));
+      showError(translateError(response.error));
       await updateTabsList();
     }
 
   } catch (error) {
     console.error('Erro ao iniciar controle:', error);
-    updateControlState(false, 100, false);
+    updateControlState(false, VOLUME_DEFAULT, false);
     hideDomainInfo();
     showError(i18n('msgCommunicationError', 'Erro de comunicação com a extensão'));
     await updateTabsList();
@@ -178,13 +204,13 @@ async function stopVolumeControl() {
     });
 
     if (response.success) {
-      updateControlState(false, 100, false);
+      updateControlState(false, VOLUME_DEFAULT, false);
       hideDomainInfo();
       showSuccess(i18n('msgVolumeStopped', 'Controle de volume parado'));
       await updateTabsList();
     } else {
       await checkTabControlStatus();
-      showError(response.error || i18n('msgCommunicationError', 'Erro ao parar controle de volume'));
+      showError(translateError(response.error));
     }
 
   } catch (error) {
@@ -198,6 +224,14 @@ async function stopVolumeControl() {
 
 // Alternar mute
 async function toggleMute() {
+  // Bloqueio reentrante para evitar cliques sucessivos disparando estados conflitantes.
+  if (muteBtn.disabled) {
+    return;
+  }
+
+  const previousDisabled = muteBtn.disabled;
+  muteBtn.disabled = true;
+
   try {
     const newMutedState = !isMuted;
 
@@ -209,25 +243,30 @@ async function toggleMute() {
 
     if (response.success) {
       updateMuteState(newMutedState);
-      showSuccess(newMutedState ? i18n('msgTabMuted', 'Aba mutada') : i18n('msgTabUnmuted', 'Aba desmutada'));
+      showSuccess(newMutedState ? i18n('msgTabMuted', 'Aba silenciada') : i18n('msgTabUnmuted', 'Som da aba ativado'));
     } else {
       await checkTabControlStatus();
-      showError(response.error || i18n('msgCommunicationError', 'Erro ao mutar aba'));
+      showError(translateError(response.error));
     }
 
   } catch (error) {
     console.error('Erro ao alternar mute:', error);
     await checkTabControlStatus();
     showError(i18n('msgCommunicationError', 'Erro de comunicação com a extensão'));
+  } finally {
+    // Só reabilita se ainda fizer sentido (controle ativo).
+    // checkTabControlStatus pode ter mudado isControlling para false, nesse caso
+    // o updateControlState mantém o botão desabilitado.
+    if (isControlling) {
+      muteBtn.disabled = previousDisabled;
+    }
   }
 }
 
 // Definir volume
 async function setVolume(volume) {
   try {
-    // Validação de entrada - usar Number.isNaN para aceitar 0 corretamente
-    const parsed = Number.parseInt(volume, 10);
-    const validVolume = Math.max(0, Math.min(600, Number.isNaN(parsed) ? 100 : parsed));
+    const validVolume = clampVolume(volume);
 
     const response = await sendMessage({
       action: 'setVolume',
@@ -244,7 +283,7 @@ async function setVolume(volume) {
         });
       }
     } else {
-      showError(response.error || i18n('msgVolumeError', 'Erro ao definir volume'));
+      showError(translateError(response.error));
     }
 
   } catch (error) {
@@ -258,10 +297,16 @@ async function updateTabsList() {
   try {
     const response = await sendMessage({ action: 'getAudibleTabs' });
 
-    if (response.success) {
-      renderTabsList(response.tabs);
-    } else {
-      renderTabsList([]);
+    const tabs = response.success ? response.tabs : [];
+    const wasAudible = isCurrentTabAudible;
+    isCurrentTabAudible = tabs.some(tab => tab.id === currentTabId);
+
+    renderTabsList(tabs);
+
+    // Se a audibilidade da aba atual mudou e não estamos controlando,
+    // reaplica o estado dos botões para refletir o novo cenário.
+    if (wasAudible !== isCurrentTabAudible && !isControlling) {
+      updateControlState(false, VOLUME_DEFAULT, false);
     }
 
   } catch (error) {
@@ -272,27 +317,95 @@ async function updateTabsList() {
 
 // Renderizar lista de abas
 function renderTabsList(tabs) {
+  // Limpa de forma segura (sem innerHTML).
+  while (tabsList.firstChild) {
+    tabsList.removeChild(tabsList.firstChild);
+  }
+
   if (tabs.length === 0) {
-    tabsList.innerHTML = `<li class="no-tabs">${i18n('noTabsFound', 'Nenhuma aba com áudio encontrada')}</li>`;
+    const li = document.createElement('li');
+    li.className = 'no-tabs';
+    li.textContent = i18n('noTabsFound', 'Nenhuma aba com áudio encontrada');
+    tabsList.append(li);
     return;
   }
 
   const statusControlled = i18n('statusControlled', 'Controlada');
   const statusAudible = i18n('statusAudible', 'Audível');
 
-  tabsList.innerHTML = tabs.map(tab => `
-    <li class="tab-item ${tab.controlled ? 'controlled' : ''}" data-tab-id="${tab.id}">
-      <div class="tab-info">
-        <div class="tab-title">${escapeHtml(tab.title)}</div>
-        <div class="tab-domain">${escapeHtml(tab.domain)}</div>
-      </div>
-      <div class="tab-status">${tab.controlled ? statusControlled : statusAudible}</div>
-    </li>
-  `).join('');
+  const fragment = document.createDocumentFragment();
+
+  tabs.forEach(tab => {
+    const li = document.createElement('li');
+    li.className = `tab-item${tab.controlled ? ' controlled' : ''}`;
+    li.dataset.tabId = String(tab.id);
+
+    li.append(buildFavicon(tab));
+
+    const info = document.createElement('div');
+    info.className = 'tab-info';
+
+    const title = document.createElement('div');
+    title.className = 'tab-title';
+    title.textContent = tab.title || '';
+    info.append(title);
+
+    const domain = document.createElement('div');
+    domain.className = 'tab-domain';
+    domain.textContent = tab.domain || '';
+    info.append(domain);
+
+    li.append(info);
+
+    const status = document.createElement('div');
+    status.className = 'tab-status';
+    status.textContent = tab.controlled ? statusControlled : statusAudible;
+    li.append(status);
+
+    fragment.append(li);
+  });
+
+  tabsList.append(fragment);
+}
+
+function buildFavicon(tab) {
+  const initial = (tab.domain || '?').replace(/^www\./, '').charAt(0).toUpperCase() || '?';
+
+  if (!tab.favIconUrl || !isSafeFaviconUrl(tab.favIconUrl)) {
+    return buildFaviconFallback(initial);
+  }
+
+  const img = document.createElement('img');
+  img.className = 'tab-favicon';
+  img.alt = '';
+  img.referrerPolicy = 'no-referrer';
+  img.src = tab.favIconUrl;
+  img.addEventListener('error', () => {
+    img.replaceWith(buildFaviconFallback(initial));
+  }, { once: true });
+  return img;
+}
+
+function buildFaviconFallback(initial) {
+  const span = document.createElement('span');
+  span.className = 'tab-favicon-fallback';
+  span.setAttribute('aria-hidden', 'true');
+  span.textContent = initial;
+  return span;
+}
+
+// Aceita apenas esquemas seguros para uso em <img src>.
+function isSafeFaviconUrl(url) {
+  if (typeof url !== 'string' || url.length > 2048) {
+    return false;
+  }
+  return /^(https?:|data:image\/)/i.test(url);
 }
 
 async function selectTab(tabId) {
   currentTabId = tabId;
+  // A lista só contém abas audíveis, então a aba selecionada é audível.
+  isCurrentTabAudible = true;
 
   try {
     await chrome.tabs.update(tabId, { active: true });
@@ -306,10 +419,10 @@ async function selectTab(tabId) {
   }
 
   tabsList.querySelectorAll('.tab-item').forEach(item => {
-    item.classList.toggle('selected', Number.parseInt(item.dataset.tabId) === tabId);
+    item.classList.toggle('selected', Number.parseInt(item.dataset.tabId, 10) === tabId);
   });
 
-  checkTabControlStatus();
+  await checkTabControlStatus();
 }
 
 // Verificar status de controle da aba
@@ -324,7 +437,7 @@ async function checkTabControlStatus() {
         updateControlState(true, controlledTab.currentGain, controlledTab.isMuted);
         showDomainInfo(controlledTab.domain);
       } else {
-        updateControlState(false, 100, false);
+        updateControlState(false, VOLUME_DEFAULT, false);
         hideDomainInfo();
       }
     }
@@ -336,9 +449,10 @@ async function checkTabControlStatus() {
 
 function updateControlState(controlling, volume, muted) {
   isControlling = controlling;
-  isMuted = muted;
+  // isMuted é gerenciado por updateMuteState abaixo (fonte única).
 
-  startBtn.disabled = controlling;
+  // Iniciar só fica habilitado em abas audíveis e quando ainda não controlamos.
+  startBtn.disabled = controlling || !isCurrentTabAudible;
   stopBtn.disabled = !controlling;
   muteBtn.disabled = !controlling;
   resetBtn.disabled = !controlling;
@@ -353,7 +467,9 @@ function updateControlState(controlling, volume, muted) {
 // Atualizar estado do mute
 function updateMuteState(muted) {
   isMuted = muted;
-  muteBtn.textContent = muted ? 'Desmute' : 'Mute';
+  muteBtn.textContent = muted
+    ? i18n('btnUnmute', 'Unmute')
+    : i18n('btnMute', 'Mute');
   muteBtn.className = muted ? 'btn btn-primary' : 'btn btn-secondary';
 }
 
@@ -378,87 +494,66 @@ function updateVolumeDisplay(volume) {
 // Mostrar informações do domínio
 function showDomainInfo(domain) {
   currentDomain.textContent = domain;
-  domainInfo.style.display = 'block';
+  domainInfo.classList.remove('is-hidden');
 }
 
 // Esconder informações do domínio
 function hideDomainInfo() {
-  domainInfo.style.display = 'none';
+  domainInfo.classList.add('is-hidden');
 }
 
 // Mostrar mensagem de erro
 function showError(message) {
   errorMessage.textContent = message;
-  errorMessage.style.display = 'block';
-  successMessage.style.display = 'none';
+  errorMessage.classList.add('is-visible');
+  successMessage.classList.remove('is-visible');
 
   setTimeout(() => {
-    errorMessage.style.display = 'none';
-  }, 5000);
+    errorMessage.classList.remove('is-visible');
+  }, ERROR_TOAST_MS);
 }
 
 // Mostrar mensagem de sucesso
 function showSuccess(message) {
   successMessage.textContent = message;
-  successMessage.style.display = 'block';
-  errorMessage.style.display = 'none';
+  successMessage.classList.add('is-visible');
+  errorMessage.classList.remove('is-visible');
 
   setTimeout(() => {
-    successMessage.style.display = 'none';
-  }, 3000);
+    successMessage.classList.remove('is-visible');
+  }, SUCCESS_TOAST_MS);
 }
 
-// Definir estado de loading do botão
+// Definir estado de loading do botão.
+// Apenas o texto é responsabilidade desta função; o estado `disabled` é
+// gerenciado por `updateControlState` para evitar que reabilitemos botões
+// que já deveriam estar desabilitados após a operação.
 function setLoading(button, loading) {
   if (loading) {
     button.disabled = true;
     button.textContent = i18n('btnLoading', 'Carregando...');
-  } else {
-    button.disabled = false;
-    if (button === startBtn) {
-      button.textContent = i18n('btnStart', 'Iniciar');
-    }
-    if (button === stopBtn) {
-      button.textContent = i18n('btnStop', 'Parar');
-    }
+    return;
+  }
+
+  if (button === startBtn) {
+    button.textContent = i18n('btnStart', 'Iniciar');
+  } else if (button === stopBtn) {
+    button.textContent = i18n('btnStop', 'Parar');
   }
 }
 
-// Enviar mensagem para service worker com retry
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 500;
-
-async function sendMessage(message, retries = MAX_RETRIES) {
+// Send a message to the service worker with bounded retry + exponential backoff.
+async function sendMessage(message, retries = SEND_MESSAGE_RETRIES) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      return await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(message, (response) => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else {
-            resolve(response);
-          }
-        });
-      });
+      return await chrome.runtime.sendMessage(message);
     } catch (error) {
       if (attempt === retries) {
         throw error;
       }
-      // Exponential backoff
-      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * Math.pow(2, attempt - 1)));
+      await new Promise(resolve => setTimeout(resolve, SEND_MESSAGE_BASE_DELAY_MS * Math.pow(2, attempt - 1)));
     }
   }
-}
-
-// Escapar HTML para prevenir XSS
-function escapeHtml(text) {
-  if (typeof text !== 'string') {
-    return '';
-  }
-
-  const div = document.createElement('div');
-  div.textContent = text.substring(0, 500); // Limita tamanho
-  return div.innerHTML;
 }
 
 function setupTabsUpdateListener() {
@@ -468,46 +563,58 @@ function setupTabsUpdateListener() {
     }
   });
 
-  chrome.runtime.sendMessage({ action: 'popupOpened' }).catch(() => {
-  });
+  // Padrão MV3 confiável para detectar abertura/fechamento do popup:
+  // mantemos uma Port aberta; o SW recebe `onDisconnect` quando o popup fecha.
+  // beforeunload em popups de extensão não é confiável.
+  try {
+    chrome.runtime.connect({ name: POPUP_PORT_NAME });
+  } catch (error) {
+    console.debug('Falha ao abrir Port com SW:', error);
+  }
 }
-
-window.addEventListener('beforeunload', () => {
-  chrome.runtime.sendMessage({ action: 'popupClosed' }).catch(() => {
-  });
-});
 
 async function loadDarkModePreference() {
   try {
     const result = await chrome.storage.local.get(['darkMode']);
-    const isDarkMode = result.darkMode === undefined ? true : result.darkMode;
+    let isDarkMode;
 
-    const toggleLabel = darkModeToggle.querySelector('.toggle-label');
-
-    if (isDarkMode) {
-      document.body.classList.add('dark-mode');
-      darkModeToggle.setAttribute('aria-checked', 'true');
-      toggleLabel.textContent = '☀️';
+    if (result.darkMode === undefined) {
+      // Primeira abertura: respeita preferência do sistema (com fallback para dark)
+      const prefersDark = globalThis.matchMedia
+        ? globalThis.matchMedia('(prefers-color-scheme: dark)').matches
+        : true;
+      isDarkMode = prefersDark;
     } else {
-      darkModeToggle.setAttribute('aria-checked', 'false');
-      toggleLabel.textContent = '🌙';
+      isDarkMode = Boolean(result.darkMode);
     }
+
+    // theme-init.js already painted using the localStorage cache; here we just
+    // reconcile with the canonical chrome.storage.local value and refresh the
+    // cache so the next popup open paints correctly.
+    document.documentElement.classList.toggle('dark-mode', isDarkMode);
+    try {
+      localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
+    } catch (_storageBlocked) {
+      // ignore
+    }
+    darkModeToggle.setAttribute('aria-pressed', isDarkMode ? 'true' : 'false');
   } catch (error) {
     console.error('Erro ao carregar preferência do modo dark:', error);
   }
 }
 
 function toggleDarkMode() {
-  const isDarkMode = document.body.classList.toggle('dark-mode');
-  const toggleLabel = darkModeToggle.querySelector('.toggle-label');
-
-  toggleLabel.textContent = isDarkMode ? '☀️' : '🌙';
-  darkModeToggle.setAttribute('aria-checked', isDarkMode.toString());
-
+  const isDarkMode = document.documentElement.classList.toggle('dark-mode');
+  darkModeToggle.setAttribute('aria-pressed', isDarkMode ? 'true' : 'false');
   saveDarkModePreference(isDarkMode);
 }
 
 async function saveDarkModePreference(isDarkMode) {
+  try {
+    localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
+  } catch (_storageBlocked) {
+    // ignore
+  }
   try {
     await chrome.storage.local.set({ darkMode: isDarkMode });
   } catch (error) {

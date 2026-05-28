@@ -24,15 +24,15 @@
         "description": "Botão para parar controle de volume"
     },
     "btnMute": {
-        "message": "Mute",
+        "message": "Silenciar",
         "description": "Botão para mutar"
     },
     "btnUnmute": {
-        "message": "Desmute",
+        "message": "Ativar som",
         "description": "Botão para desmutar"
     },
     "btnReset": {
-        "message": "Reset",
+        "message": "Padrão",
         "description": "Botão para resetar volume"
     },
     "btnLoading": {
@@ -80,11 +80,11 @@
         "description": "Mensagem de sucesso ao parar"
     },
     "msgTabMuted": {
-        "message": "Aba mutada",
+        "message": "Aba silenciada",
         "description": "Mensagem ao mutar"
     },
     "msgTabUnmuted": {
-        "message": "Aba desmutada",
+        "message": "Som da aba ativado",
         "description": "Mensagem ao desmutar"
     },
     "msgSelectTab": {
@@ -102,6 +102,30 @@
     "msgVolumeError": {
         "message": "Erro ao definir volume",
         "description": "Erro ao definir volume"
+    },
+    "errTabNotAudible": {
+        "message": "Esta aba não está reproduzindo áudio agora",
+        "description": "Erro ao tentar iniciar em aba sem som"
+    },
+    "errTabNotControlled": {
+        "message": "Controle de volume não está ativo nesta aba",
+        "description": "Erro quando ação ocorre em aba não controlada"
+    },
+    "errInvalidDomain": {
+        "message": "Domínio inválido",
+        "description": "Erro para domínio malformado"
+    },
+    "errNoProcessor": {
+        "message": "Processador de áudio indisponível",
+        "description": "Erro quando o processador offscreen não existe"
+    },
+    "errCaptureFailed": {
+        "message": "Não foi possível capturar o áudio da aba",
+        "description": "Erro ao capturar áudio da aba"
+    },
+    "errInternal": {
+        "message": "Algo deu errado. Tente de novo.",
+        "description": "Erro interno genérico"
     },
     "ariaToggleDarkMode": {
         "message": "Alternar modo escuro/claro",

@@ -12,13 +12,10 @@ function initAudioContext() {
 }
 
 class TabAudioProcessor {
-  constructor(tabId, stream, initialGain = 100) {
-    this.tabId = Number.parseInt(tabId) || 0;
+  constructor(tabId, stream, initialGain = VOLUME_DEFAULT) {
+    this.tabId = Number.parseInt(tabId, 10) || 0;
     this.stream = stream;
-    // Validação de ganho inicial - usar Number.isNaN para aceitar 0 corretamente
-    const parsedGain = Number.parseInt(initialGain, 10);
-    const validGain = Math.max(0, Math.min(600, Number.isNaN(parsedGain) ? 100 : parsedGain));
-    this.gain = validGain / 100;
+    this.gain = clampVolume(initialGain) / 100;
     this.isMuted = false;
 
     this.sourceNode = null;
@@ -36,6 +33,9 @@ class TabAudioProcessor {
       this.gainNode = audioContext.createGain();
       this.gainNode.gain.value = this.isMuted ? 0 : this.gain;
 
+      // Dynamics compressor protects the user's ears at high gain values
+      // (up to 6x) by attenuating peaks above -24 dBFS. Settings mirror the
+      // Web Audio API defaults plus a soft 30 dB knee for a smoother sound.
       this.compressorNode = audioContext.createDynamicsCompressor();
       this.compressorNode.threshold.value = -24;
       this.compressorNode.knee.value = 30;
@@ -50,17 +50,14 @@ class TabAudioProcessor {
       this.compressorNode.connect(this.destinationNode);
 
     } catch (error) {
-      console.error(`Erro ao configurar grafo de áudio para aba ${this.tabId}:`, error);
+      console.error(`Failed to set up audio graph for tab ${this.tabId}:`, error);
       throw error;
     }
   }
 
   setGain(gain) {
     if (this.gainNode) {
-      // Validação de ganho - usar Number.isNaN para aceitar 0 corretamente
-      const parsed = Number.parseInt(gain, 10);
-      const validGain = Math.max(0, Math.min(600, Number.isNaN(parsed) ? 100 : parsed)) / 100;
-      this.gain = validGain;
+      this.gain = clampVolume(gain) / 100;
       this.gainNode.gain.value = this.isMuted ? 0 : this.gain;
     }
   }
@@ -88,8 +85,6 @@ class TabAudioProcessor {
         this.stream.getTracks().forEach(track => track.stop());
       }
 
-      console.log(`Processador de áudio parado para aba ${this.tabId}`);
-
     } catch (error) {
       console.error(`Erro ao parar processador de áudio para aba ${this.tabId}:`, error);
     }
@@ -97,6 +92,11 @@ class TabAudioProcessor {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // Só aceita mensagens de componentes da própria extensão.
+  if (!sender || sender.id !== chrome.runtime.id) {
+    return false;
+  }
+
   const { action } = message;
 
   const handlers = {
@@ -114,19 +114,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+// Coerce a possibly-string tabId into a safe integer.
+function toTabId(input) {
+  return Number.parseInt(input, 10) || 0;
+}
+
 // Verificar se existe processador ativo para uma aba
 function handleCheckProcessor(tabId, sendResponse) {
-  const validTabId = Number.parseInt(tabId) || 0;
-  const exists = audioProcessors.has(validTabId);
-  sendResponse({ exists });
+  sendResponse({ exists: audioProcessors.has(toTabId(tabId)) });
 }
 
 async function handleProcessAudio(tabId, mediaStreamId, gain, sendResponse) {
   try {
-    const validTabId = Number.parseInt(tabId) || 0;
+    const validTabId = toTabId(tabId);
 
     if (audioProcessors.has(validTabId)) {
-      sendResponse({ success: false, error: 'Aba já está sendo processada' });
+      sendResponse({ success: false, error: ErrorCodes.ALREADY_PROCESSING });
       return;
     }
 
@@ -148,63 +151,63 @@ async function handleProcessAudio(tabId, mediaStreamId, gain, sendResponse) {
     sendResponse({ success: true });
 
   } catch (error) {
-    console.error('Erro ao processar áudio:', error);
-    sendResponse({ success: false, error: error.message });
+    console.error('Failed to process audio:', error);
+    sendResponse({ success: false, error: ErrorCodes.CAPTURE_FAILED });
   }
 }
 
 async function handleRestoreAudio(tabId, gain, sendResponse) {
   try {
-    if (audioProcessors.has(tabId)) {
-      const processor = audioProcessors.get(tabId);
-      processor.setGain(gain);
+    const validTabId = toTabId(tabId);
+    if (audioProcessors.has(validTabId)) {
+      audioProcessors.get(validTabId).setGain(gain);
       sendResponse({ success: true });
       return;
     }
 
     const mediaStreamId = await chrome.tabCapture.getMediaStreamId({
-      targetTabId: tabId
+      targetTabId: validTabId
     });
 
     if (!mediaStreamId) {
-      sendResponse({ success: false, error: 'Não foi possível obter stream de áudio' });
+      sendResponse({ success: false, error: ErrorCodes.CAPTURE_FAILED });
       return;
     }
 
-    await handleProcessAudio(tabId, mediaStreamId, gain, sendResponse);
+    await handleProcessAudio(validTabId, mediaStreamId, gain, sendResponse);
 
   } catch (error) {
-    console.error('Erro ao restaurar áudio:', error);
-    sendResponse({ success: false, error: error.message });
+    console.error('Failed to restore audio:', error);
+    sendResponse({ success: false, error: ErrorCodes.CAPTURE_FAILED });
   }
 }
 
 function handleStopProcessing(tabId, sendResponse) {
   try {
-    const processor = audioProcessors.get(tabId);
+    const validTabId = toTabId(tabId);
+    const processor = audioProcessors.get(validTabId);
     if (!processor) {
-      sendResponse({ success: false, error: 'Nenhum processador encontrado para esta aba' });
+      sendResponse({ success: false, error: ErrorCodes.NO_PROCESSOR });
       return;
     }
 
     processor.stop();
-    audioProcessors.delete(tabId);
+    audioProcessors.delete(validTabId);
 
     sendResponse({ success: true });
 
   } catch (error) {
-    console.error('Erro ao parar processamento:', error);
-    sendResponse({ success: false, error: error.message });
+    console.error('Failed to stop processing:', error);
+    sendResponse({ success: false, error: ErrorCodes.INTERNAL });
   }
 }
 
 function handleSetGain(tabId, gain, sendResponse) {
   try {
-    const validTabId = Number.parseInt(tabId) || 0;
-    const processor = audioProcessors.get(validTabId);
+    const processor = audioProcessors.get(toTabId(tabId));
 
     if (!processor) {
-      sendResponse({ success: false, error: 'Nenhum processador encontrado para esta aba' });
+      sendResponse({ success: false, error: ErrorCodes.NO_PROCESSOR });
       return;
     }
 
@@ -212,18 +215,17 @@ function handleSetGain(tabId, gain, sendResponse) {
     sendResponse({ success: true });
 
   } catch (error) {
-    console.error('Erro ao definir ganho:', error);
-    sendResponse({ success: false, error: error.message });
+    console.error('Failed to set gain:', error);
+    sendResponse({ success: false, error: ErrorCodes.INTERNAL });
   }
 }
 
 function handleSetMute(tabId, muted, sendResponse) {
   try {
-    const validTabId = Number.parseInt(tabId) || 0;
-    const processor = audioProcessors.get(validTabId);
+    const processor = audioProcessors.get(toTabId(tabId));
 
     if (!processor) {
-      sendResponse({ success: false, error: 'Nenhum processador encontrado para esta aba' });
+      sendResponse({ success: false, error: ErrorCodes.NO_PROCESSOR });
       return;
     }
 
@@ -231,14 +233,13 @@ function handleSetMute(tabId, muted, sendResponse) {
     sendResponse({ success: true });
 
   } catch (error) {
-    console.error('Erro ao mutar/desmutar:', error);
-    sendResponse({ success: false, error: error.message });
+    console.error('Failed to toggle mute:', error);
+    sendResponse({ success: false, error: ErrorCodes.INTERNAL });
   }
 }
 
-window.addEventListener('beforeunload', () => {
-  for (const processor of audioProcessors.values()) {
-    processor.stop();
-  }
-  audioProcessors.clear();
-});
+// Cleanup ativo: o service worker envia `stopProcessing` em chrome.tabs.onRemoved
+// e quando o usuário clica em "Parar" no popup. Quando o documento offscreen é
+// fechado pelo navegador (extensão desabilitada, browser encerrando), os recursos
+// de MediaStream e AudioContext são liberados automaticamente — o evento
+// `beforeunload` não é confiável neste contexto, então não dependemos dele.

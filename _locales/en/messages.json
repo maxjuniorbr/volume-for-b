@@ -103,6 +103,30 @@
         "message": "Error setting volume",
         "description": "Volume error"
     },
+    "errTabNotAudible": {
+        "message": "This tab is not playing audio right now",
+        "description": "Error when starting on a silent tab"
+    },
+    "errTabNotControlled": {
+        "message": "Volume control is not active for this tab",
+        "description": "Error when an action targets an uncontrolled tab"
+    },
+    "errInvalidDomain": {
+        "message": "Invalid domain",
+        "description": "Error for malformed domain"
+    },
+    "errNoProcessor": {
+        "message": "Audio processor unavailable",
+        "description": "Error when offscreen processor is missing"
+    },
+    "errCaptureFailed": {
+        "message": "Could not capture tab audio",
+        "description": "Error when tab capture fails"
+    },
+    "errInternal": {
+        "message": "Something went wrong. Please try again.",
+        "description": "Generic internal error"
+    },
     "ariaToggleDarkMode": {
         "message": "Toggle dark/light mode",
         "description": "Aria label for dark mode toggle"
