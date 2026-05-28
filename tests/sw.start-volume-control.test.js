@@ -16,7 +16,7 @@ function loadServiceWorker(chrome) {
     handleStart: (tabId) => new Promise((resolve) => {
       vm.runInContext('globalThis.__lastResponse = null;', context); // NOSONAR
       const handler = vm.runInContext('handleStartVolumeControl', context); // NOSONAR
-      handler(tabId, (response) => resolve(response));
+      handler(tabId, (response) => resolve(response)); // NOSONAR
     }),
     readTabControllers: () => vm.runInContext('Array.from(tabControllers.entries())', context) // NOSONAR
   };
