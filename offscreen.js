@@ -1,19 +1,21 @@
 const audioProcessors = new Map();
 let audioContext = null;
 
-function initAudioContext() {
+async function initAudioContext() {
   if (!audioContext) {
     audioContext = new AudioContext();
   }
 
+  // Aguardar o resume importa: montar o grafo com o contexto ainda suspenso
+  // resulta em nós conectados que não produzem som.
   if (audioContext.state === 'suspended') {
-    audioContext.resume();
+    await audioContext.resume();
   }
 }
 
 class TabAudioProcessor {
   constructor(tabId, stream, initialGain = VOLUME_DEFAULT) {
-    this.tabId = Number.parseInt(tabId, 10) || 0;
+    this.tabId = tabId;
     this.stream = stream;
     this.gain = clampVolume(initialGain) / 100;
     this.isMuted = false;
@@ -114,26 +116,49 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// Coerce a possibly-string tabId into a safe integer.
+// Normaliza o tabId recebido por mensagem. Devolve null em vez de 0 para
+// entradas inválidas: colapsar tudo para 0 criava uma chave real no mapa, que
+// podia colidir com outra entrada em vez de rejeitar a operação.
 function toTabId(input) {
-  return Number.parseInt(input, 10) || 0;
+  const parsed = Number.parseInt(input, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+// Fecha o documento offscreen quando não há mais nada para processar. Sem isso,
+// o AudioContext ficava aberto indefinidamente consumindo recursos. O service
+// worker recria o documento sob demanda (ele consulta offscreen.hasDocument()).
+function closeIfIdle() {
+  if (audioProcessors.size > 0) {
+    return;
+  }
+  // Deixa a resposta corrente ser entregue antes de derrubar o documento.
+  setTimeout(() => {
+    if (audioProcessors.size === 0) {
+      globalThis.close();
+    }
+  }, 0);
 }
 
 // Verificar se existe processador ativo para uma aba
 function handleCheckProcessor(tabId, sendResponse) {
-  sendResponse({ exists: audioProcessors.has(toTabId(tabId)) });
+  const validTabId = toTabId(tabId);
+  sendResponse({ exists: validTabId !== null && audioProcessors.has(validTabId) });
 }
 
 async function handleProcessAudio(tabId, mediaStreamId, gain, sendResponse) {
   try {
     const validTabId = toTabId(tabId);
+    if (validTabId === null) {
+      sendResponse({ success: false, error: ErrorCodes.INTERNAL });
+      return;
+    }
 
     if (audioProcessors.has(validTabId)) {
       sendResponse({ success: false, error: ErrorCodes.ALREADY_PROCESSING });
       return;
     }
 
-    initAudioContext();
+    await initAudioContext();
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -159,6 +184,11 @@ async function handleProcessAudio(tabId, mediaStreamId, gain, sendResponse) {
 async function handleRestoreAudio(tabId, gain, sendResponse) {
   try {
     const validTabId = toTabId(tabId);
+    if (validTabId === null) {
+      sendResponse({ success: false, error: ErrorCodes.INTERNAL });
+      return;
+    }
+
     if (audioProcessors.has(validTabId)) {
       audioProcessors.get(validTabId).setGain(gain);
       sendResponse({ success: true });
@@ -195,6 +225,7 @@ function handleStopProcessing(tabId, sendResponse) {
     audioProcessors.delete(validTabId);
 
     sendResponse({ success: true });
+    closeIfIdle();
 
   } catch (error) {
     console.error('Failed to stop processing:', error);

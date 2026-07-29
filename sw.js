@@ -461,7 +461,7 @@ async function handleGetAudibleTabs(sendResponse) {
         id: tab.id,
         title: clipString(tab.title || ''),
         domain: isValidHostname(domain) ? domain : '',
-        favIconUrl: tab.favIconUrl || '',
+        favIconUrl: clipString(tab.favIconUrl || '', FAVICON_URL_MAX),
         controlled: tabControllers.has(tab.id)
       };
     });
