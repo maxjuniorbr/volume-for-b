@@ -333,10 +333,15 @@ async function handleStopVolumeControl(tabId, sendResponse) {
       return;
     }
 
-    await chrome.runtime.sendMessage({
-      action: 'stopProcessing',
-      tabId
-    });
+    // Parar é uma operação de recuperação: uma falha ao falar com o offscreen
+    // não pode impedir que a aba volte ao som normal. Se este await lançasse,
+    // a aba ficaria mutada e o controller preso no mapa — sem saída para o
+    // usuário, nem tentando de novo.
+    try {
+      await chrome.runtime.sendMessage({ action: 'stopProcessing', tabId });
+    } catch (error) {
+      console.debug(`Offscreen não confirmou stopProcessing da aba ${tabId}: ${formatErrorMessage(error)}`);
+    }
 
     await chrome.tabs.update(tabId, { muted: controller.originalMuted });
     tabControllers.delete(tabId);
