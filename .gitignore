@@ -24,6 +24,10 @@ Thumbs.db
 # Environment
 .env*
 
+# SonarLint: só o binding do connected mode é compartilhável
+.sonarlint/*
+!.sonarlint/connectedMode.json
+
 # Editor files
 .vscode/
 *.swp
