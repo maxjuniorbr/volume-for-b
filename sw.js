@@ -135,14 +135,11 @@ chrome.tabs.onRemoved.addListener(async (tabId, _removeInfo) => {
   }
 });
 
-// Antes do SW desligar, tenta restaurar o estado mute original das abas
-// controladas para que o usuário não fique com a aba mutada caso a extensão
-// seja desabilitada ou desinstalada com o navegador aberto.
-chrome.runtime.onSuspend.addListener(() => {
-  for (const [tabId, controller] of tabControllers) {
-    chrome.tabs.update(tabId, { muted: controller.originalMuted }).catch(() => { });
-  }
-});
+// Não existe evento de pré-terminação para service workers MV3: runtime.onSuspend
+// só vale para event pages do MV2 e nunca dispara aqui. Por isso o mute não é
+// desfeito "na saída" — ele é mantido coerente com a existência de um processador
+// vivo, em restoreControllerState: com áudio processado a aba fica muda (para não
+// duplicar o som), sem áudio processado ela volta ao estado original.
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!isFromOwnExtension(sender)) {
@@ -228,6 +225,16 @@ async function handleStartVolumeControl(tabId, sendResponse) {
     }
 
     sendResponse({ success: false, error: error.message });
+  }
+}
+
+// Ajuste de mute best-effort: a aba pode ter sido fechada no meio do caminho, e
+// nenhum caminho de recuperação deve quebrar por causa disso.
+async function setTabMuted(tabId, muted) {
+  try {
+    await chrome.tabs.update(tabId, { muted });
+  } catch (error) {
+    console.debug(`Não foi possível ajustar o mute da aba ${tabId}: ${formatErrorMessage(error)}`);
   }
 }
 
@@ -599,16 +606,24 @@ async function restoreControllerState() {
         tabControllers.set(tabId, controller);
 
         try {
-          await chrome.runtime.sendMessage({
+          const restored = await chrome.runtime.sendMessage({
             action: 'restoreAudio',
             tabId,
             gain: controller.currentGain
           });
+          assertOffscreenAck(restored, ErrorCodes.CAPTURE_FAILED);
+
+          // Com processador vivo, a aba precisa permanecer muda: o som real sai
+          // pelo documento offscreen. Reafirmar aqui cobre o caso de o mute ter
+          // sido desfeito enquanto o SW estava morto.
+          await setTabMuted(tabId, true);
         } catch (error) {
-          // Falha transitória ao falar com o offscreen: tira da memória
-          // para esta sessão do SW, mas preserva no storage para que o
-          // próximo wakeup tente restaurar de novo.
+          // Sem áudio processado não há motivo para manter a aba muda — seria
+          // silêncio sem contrapartida. Devolve o estado original e tira da
+          // memória, preservando no storage para tentar de novo no próximo
+          // wakeup (que remutará ao restaurar com sucesso).
           console.debug(`Falha ao restaurar áudio da aba ${tabId}: ${formatErrorMessage(error)}`);
+          await setTabMuted(tabId, Boolean(controller.originalMuted));
           tabControllers.delete(tabId);
         }
       }));

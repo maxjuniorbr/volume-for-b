@@ -15,7 +15,6 @@ export function createChromeMock() {
       onInstalled: { addListener: vi.fn() },
       onMessage: { addListener: vi.fn() },
       onConnect: { addListener: vi.fn() },
-      onSuspend: { addListener: vi.fn() },
       sendMessage: vi.fn(),
       id: 'test-extension-id'
     },

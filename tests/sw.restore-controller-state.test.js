@@ -141,4 +141,56 @@ describe('restoreControllerState', () => {
       [2, inaudibleController]
     ]);
   });
+
+  it('mantém a aba muda quando há processador vivo e a devolve ao som quando não há', async () => {
+    const chrome = createChromeMock();
+
+    chrome.storage.local.get.mockResolvedValue({
+      tabControllers: {
+        1: { currentGain: 200, originalMuted: false },
+        2: { currentGain: 150, originalMuted: false }
+      }
+    });
+    chrome.storage.local.set.mockResolvedValue(undefined);
+    chrome.offscreen.createDocument.mockResolvedValue(undefined);
+    chrome.tabs.get.mockResolvedValue({ audible: true });
+    chrome.tabs.update.mockResolvedValue(undefined);
+
+    chrome.runtime.sendMessage.mockImplementation(async ({ tabId }) => {
+      // A aba 2 não consegue recapturar o áudio.
+      return tabId === 2
+        ? { success: false, error: 'capture_failed' }
+        : { success: true };
+    });
+
+    const sw = loadServiceWorker(chrome);
+    await sw.restoreControllerState();
+
+    // Aba 1: áudio sai pelo offscreen, então continua muda.
+    expect(chrome.tabs.update).toHaveBeenCalledWith(1, { muted: true });
+    // Aba 2: sem processamento, silenciá-la seria silêncio sem contrapartida.
+    expect(chrome.tabs.update).toHaveBeenCalledWith(2, { muted: false });
+    expect(sw.readTabControllers()).toEqual([
+      [1, { currentGain: 200, originalMuted: false }]
+    ]);
+  });
+
+  it('respeita o mute que o usuário já tinha aplicado antes do controle', async () => {
+    const chrome = createChromeMock();
+
+    chrome.storage.local.get.mockResolvedValue({
+      tabControllers: { 9: { currentGain: 300, originalMuted: true } }
+    });
+    chrome.storage.local.set.mockResolvedValue(undefined);
+    chrome.offscreen.createDocument.mockResolvedValue(undefined);
+    chrome.tabs.get.mockResolvedValue({ audible: true });
+    chrome.tabs.update.mockResolvedValue(undefined);
+    chrome.runtime.sendMessage.mockResolvedValue({ success: false, error: 'capture_failed' });
+
+    const sw = loadServiceWorker(chrome);
+    await sw.restoreControllerState();
+
+    expect(chrome.tabs.update).toHaveBeenCalledWith(9, { muted: true });
+    expect(sw.readTabControllers()).toEqual([]);
+  });
 });
