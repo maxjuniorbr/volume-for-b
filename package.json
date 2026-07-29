@@ -20,7 +20,8 @@
     "lint:check": "eslint *.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify": "npm run lint:check && npm run test"
+    "verify": "npm run lint:check && npm run test",
+    "audit": "npm audit --audit-level=high"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -3,6 +3,9 @@ name: CI
 on:
   push:
     branches: [main]
+  schedule:
+    # Monday 09:00 UTC — surfaces new advisories without opening pull requests.
+    - cron: '0 9 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -12,6 +15,7 @@ jobs:
   verify:
     name: Lint & tests
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     steps:
       - uses: actions/checkout@v7
 
@@ -24,10 +28,26 @@ jobs:
 
       - run: npm run verify
 
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run audit
+
   build:
     name: Production build
     runs-on: ubuntu-latest
     needs: verify
+    if: github.event_name != 'schedule'
     steps:
       - uses: actions/checkout@v7
 
