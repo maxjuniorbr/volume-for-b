@@ -26,7 +26,48 @@ while CI is green, since the two are independent checks. If the SonarQube MCP se
 is connected, `get_project_quality_gate_status` with the project key from
 `.sonarlint/connectedMode.json` answers this directly.
 
-## 2. Bump the version
+## 2. Check the docs are current
+
+Never publish with stale documentation. Run these and fix anything they report:
+
+```bash
+# README documents exactly the scripts that exist
+python3 -c "
+import json, re
+reais = set(json.load(open('package.json'))['scripts'])
+doc = set(re.findall(r'npm run ([a-z:]+)', open('README.md').read()))
+print('no README mas não existem:', doc - reais or 'ok')
+print('existem mas não documentados:', reais - doc - {'test'} or 'ok')
+"
+
+# manifest.json and package.json agree on the version
+python3 -c "
+import json
+m = json.load(open('manifest.json'))['version']
+p = json.load(open('package.json'))['version']
+print('manifest', m, '| package', p, '->', 'ok' if m == p else 'DIVERGENTES')
+"
+
+# relative links in every markdown file resolve
+python3 -c "
+import re, os, glob
+for f in glob.glob('*.md') + glob.glob('.claude/skills/*/SKILL.md'):
+    for alvo in re.findall(r'\]\((?!https?:)([^)#]+)', open(f).read()):
+        if not os.path.exists(os.path.join(os.path.dirname(f), alvo)):
+            print(f, '-> link quebrado:', alvo)
+print('links verificados')
+"
+```
+
+Then read the `[Unreleased]` section of `CHANGELOG.md` and confirm that anything
+user-facing in it is also reflected where users actually look:
+
+- a new or changed feature → `README.md` (Core Features) and
+  `STORE_DESCRIPTION.pt-BR.md`
+- a new MV3 constraint or convention learned while fixing something → `CLAUDE.md`
+- a change to the release process itself → this skill
+
+## 3. Bump the version
 
 The version lives in **two** files and they must match — `manifest.json` is what
 ships, `package.json` is what the tooling reports. They have drifted before.
@@ -41,7 +82,7 @@ a bug fix or internal change, minor for a new feature, major for a breaking chan
 Add a matching section to `CHANGELOG.md` under the release version, following the
 Keep a Changelog format already in the file. Only user-visible changes belong there.
 
-## 3. Build
+## 4. Build
 
 ```bash
 npm run build
@@ -51,7 +92,7 @@ Confirm `volume-for-b-production.zip` is generated and the reported version matc
 the bump. The build reads the Extension ID from `build.config.js`, which is
 gitignored.
 
-## 4. Authenticate
+## 5. Authenticate
 
 Get a token:
 
@@ -82,7 +123,7 @@ The login is interactive. Ask the user to run it rather than running it yourself
 If refresh tokens keep expiring after ~7 days, the OAuth consent screen is still in
 "Testing" mode. Switching it to "In production" fixes that permanently.
 
-## 5. Upload
+## 6. Upload
 
 ```bash
 EXT_ID=$(grep -oP "EXTENSION_ID:\s*'\K[^']+" build.config.js)
@@ -97,7 +138,7 @@ curl -s -X PUT \
 
 Expect `"uploadState": "SUCCESS"`. Anything else — stop and report the response.
 
-## 6. Publish
+## 7. Publish
 
 Confirm with the user before this step. It makes the version public and cannot be
 undone; a mistake requires shipping another version.
@@ -113,7 +154,7 @@ curl -s -X POST \
 Expect `"status": ["OK"]`. A `PUBLISHED_WITH_FRICTION_WARNING` also means success but
 flags a listing issue worth reading.
 
-## 7. Record the release
+## 8. Record the release
 
 ```bash
 git add manifest.json package.json package-lock.json CHANGELOG.md
