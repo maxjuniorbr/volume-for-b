@@ -355,6 +355,10 @@ async function handleSetVolume(tabId, volume, sendResponse) {
     });
 
     controller.currentGain = validVolume;
+    // Precisa persistir: o SW é morto por idle a cada 30s e, ao acordar,
+    // restoreControllerState reenvia o gain lido do storage ao offscreen.
+    // Sem este save, o valor antigo sobrescreve o que o usuário acabou de ajustar.
+    await saveControllerState();
     sendResponse({ success: true });
 
   } catch (error) {
@@ -377,6 +381,7 @@ async function handleMuteTab(tabId, muted, sendResponse) {
     });
 
     controller.isMuted = muted;
+    await saveControllerState();
     sendResponse({ success: true });
 
   } catch (error) {
