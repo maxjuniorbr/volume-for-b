@@ -114,11 +114,38 @@ async function cleanupOldDomains() {
   }
 }
 
-chrome.tabs.onUpdated.addListener((_tabId, changeInfo, _tab) => {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
+  // Navegar para outro site na mesma aba deixava o controller apontando para o
+  // domínio anterior, e o ganho passava a ser gravado no domínio errado.
+  if (changeInfo.url !== undefined) {
+    syncControllerDomain(tabId, changeInfo.url);
+  }
+
   if (changeInfo.audible !== undefined && popupIsOpen) {
     notifyPopupTabsUpdated();
   }
 });
+
+function syncControllerDomain(tabId, url) {
+  const controller = tabControllers.get(tabId);
+  if (!controller) {
+    return;
+  }
+
+  const nextDomain = extractSafeHostname(url);
+  if (nextDomain === controller.domain) {
+    return;
+  }
+
+  controller.domain = nextDomain;
+  saveControllerState().catch((error) => {
+    console.debug(`Falha ao persistir troca de domínio da aba ${tabId}: ${formatErrorMessage(error)}`);
+  });
+
+  if (popupIsOpen) {
+    notifyPopupTabsUpdated();
+  }
+}
 
 chrome.tabs.onRemoved.addListener(async (tabId, _removeInfo) => {
   if (tabControllers.has(tabId)) {
@@ -155,9 +182,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     'setVolume': () => handleSetVolume(message.tabId, message.volume, sendResponse),
     'muteTab': () => handleMuteTab(message.tabId, message.muted, sendResponse),
     'getAudibleTabs': () => handleGetAudibleTabs(sendResponse),
-    'getControlledTabs': () => handleGetControlledTabs(sendResponse),
-    'getDomainGain': () => handleGetDomainGain(message.domain, sendResponse),
-    'saveDomainGain': () => handleSaveDomainGain(message.domain, message.gain, sendResponse)
+    'getControlledTabs': () => handleGetControlledTabs(sendResponse)
   };
 
   if (handlers[action]) {
@@ -384,6 +409,12 @@ async function handleSetVolume(tabId, volume, sendResponse) {
     // restoreControllerState reenvia o gain lido do storage ao offscreen.
     // Sem este save, o valor antigo sobrescreve o que o usuário acabou de ajustar.
     await saveControllerState();
+
+    // A memória por domínio é gravada aqui, com o domínio do próprio controller.
+    // Antes o popup enviava o domínio lido do DOM, que ficava obsoleto quando a
+    // aba navegava para outro site — o ganho ia para o domínio anterior.
+    await persistDomainGain(controller.domain, validVolume);
+
     sendResponse({ success: true });
 
   } catch (error) {
@@ -473,38 +504,23 @@ async function handleGetControlledTabs(sendResponse) {
   }
 }
 
-async function handleGetDomainGain(domain, sendResponse) {
-  try {
-    if (!isValidHostname(domain)) {
-      sendResponse({ success: true, gain: VOLUME_DEFAULT });
-      return;
-    }
-
-    const gain = await getDomainGainFromStorage(domain);
-    sendResponse({ success: true, gain: resolveGain(gain) });
-  } catch (error) {
-    sendResponse({ success: false, error: error.message });
+// Grava o ganho memorizado por domínio. Silenciosa por design: é um efeito
+// colateral do ajuste de volume, e falhar aqui não deve derrubar a operação
+// principal, que é aplicar o volume que o usuário pediu.
+async function persistDomainGain(domain, gain) {
+  if (!isValidHostname(domain)) {
+    return;
   }
-}
 
-async function handleSaveDomainGain(domain, gain, sendResponse) {
   try {
-    if (!isValidHostname(domain)) {
-      sendResponse({ success: false, error: ErrorCodes.INVALID_DOMAIN });
-      return;
-    }
-
-    const validGain = clampVolume(gain);
-
     await chrome.storage.local.set({
       [`${DOMAIN_KEY_PREFIX}${domain}`]: {
-        gain: validGain,
+        gain: clampVolume(gain),
         lastAccessed: Date.now()
       }
     });
-    sendResponse({ success: true });
   } catch (error) {
-    sendResponse({ success: false, error: error.message });
+    console.debug(`Falha ao memorizar ganho de ${domain}: ${formatErrorMessage(error)}`);
   }
 }
 

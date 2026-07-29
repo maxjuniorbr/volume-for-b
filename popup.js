@@ -274,15 +274,7 @@ async function setVolume(volume) {
       volume: validVolume
     });
 
-    if (response.success) {
-      if (isControlling && currentDomain.textContent) {
-        await sendMessage({
-          action: 'saveDomainGain',
-          domain: currentDomain.textContent,
-          gain: validVolume
-        });
-      }
-    } else {
+    if (!response.success) {
       showError(translateError(response.error));
     }
 
@@ -491,6 +483,28 @@ function updateVolumeDisplay(volume) {
   }
 }
 
+// Atualiza apenas o rótulo do domínio quando a aba controlada navega para outro
+// site. Deliberadamente não usa checkTabControlStatus: aquele reescreve o valor
+// do slider, o que faria o controle pular se o usuário estivesse arrastando.
+async function refreshControlledDomain() {
+  if (!isControlling) {
+    return;
+  }
+
+  try {
+    const response = await sendMessage({ action: 'getControlledTabs' });
+    const controlledTab = response?.success
+      ? response.tabs.find(tab => tab.id === currentTabId)
+      : null;
+
+    if (controlledTab) {
+      showDomainInfo(controlledTab.domain);
+    }
+  } catch (error) {
+    console.debug('Falha ao atualizar domínio exibido:', error);
+  }
+}
+
 // Mostrar informações do domínio
 function showDomainInfo(domain) {
   currentDomain.textContent = domain;
@@ -560,6 +574,7 @@ function setupTabsUpdateListener() {
   chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
     if (message.action === 'tabsUpdated') {
       updateTabsList();
+      refreshControlledDomain();
     }
   });
 
