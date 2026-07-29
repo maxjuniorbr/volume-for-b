@@ -79,7 +79,7 @@ describe('sanitizeString', () => {
 
   it('deve limitar tamanho a 500 caracteres', () => {
     const longString = 'a'.repeat(1000);
-    expect(sanitizeString(longString).length).toBe(500);
+    expect(sanitizeString(longString)).toHaveLength(500);
   });
 
   it('deve remover espaços em branco nas extremidades', () => {
