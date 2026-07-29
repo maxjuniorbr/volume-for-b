@@ -245,7 +245,7 @@ async function resolveInitialGain(safeDomain) {
     return VOLUME_DEFAULT;
   }
   const stored = await getDomainGainFromStorage(safeDomain);
-  return stored || VOLUME_DEFAULT;
+  return resolveGain(stored);
 }
 
 function registerController(tabId, domain, originalMuted, currentGain) {
@@ -473,7 +473,7 @@ async function handleGetDomainGain(domain, sendResponse) {
     }
 
     const gain = await getDomainGainFromStorage(domain);
-    sendResponse({ success: true, gain: gain || VOLUME_DEFAULT });
+    sendResponse({ success: true, gain: resolveGain(gain) });
   } catch (error) {
     sendResponse({ success: false, error: error.message });
   }

@@ -171,7 +171,7 @@ async function startVolumeControl() {
     });
 
     if (response.success) {
-      updateControlState(true, response.defaultGain || VOLUME_DEFAULT, false);
+      updateControlState(true, resolveGain(response.defaultGain), false);
       showDomainInfo(response.domain);
       showSuccess(i18n('msgVolumeStarted', 'Controle de volume iniciado!'));
       await updateTabsList();

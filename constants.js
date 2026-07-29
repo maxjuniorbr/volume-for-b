@@ -52,3 +52,10 @@ function clampVolume(input) {
   const safe = Number.isNaN(parsed) ? VOLUME_DEFAULT : parsed;
   return Math.max(VOLUME_MIN, Math.min(VOLUME_MAX, safe));
 }
+
+// Resolve a stored/received gain, falling back to VOLUME_DEFAULT only when the
+// value is genuinely absent. `gain || VOLUME_DEFAULT` was wrong: VOLUME_MIN is
+// 0 and the slider allows it, so a deliberately muted domain came back at 100%.
+function resolveGain(value) {
+  return Number.isFinite(value) ? clampVolume(value) : VOLUME_DEFAULT;
+}

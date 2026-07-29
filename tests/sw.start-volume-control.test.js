@@ -104,6 +104,36 @@ describe('handleStartVolumeControl — fallback de active stream', () => {
     expect(sw.readTabControllers()).toEqual([]);
   });
 
+  it('preserva ganho 0 salvo para o domínio em vez de voltar para 100', async () => {
+    const chrome = createChromeMock();
+
+    chrome.storage.local.get.mockResolvedValue({
+      'domain_muted.example.com': { gain: 0, lastAccessed: Date.now() }
+    });
+    chrome.storage.local.set.mockResolvedValue(undefined);
+    chrome.offscreen.createDocument.mockResolvedValue(undefined);
+    chrome.tabs.get.mockResolvedValue({
+      id: 2,
+      audible: true,
+      url: 'https://muted.example.com/page',
+      mutedInfo: { muted: false }
+    });
+    chrome.tabs.update.mockResolvedValue(undefined);
+    chrome.tabCapture.getMediaStreamId.mockResolvedValue('stream-1');
+    chrome.runtime.sendMessage.mockImplementation(async (msg) => {
+      if (msg.action === 'checkProcessor') {
+        return { exists: false };
+      }
+      return { success: true };
+    });
+
+    const sw = loadServiceWorker(chrome);
+    const response = await sw.handleStart(2);
+
+    expect(response.success).toBe(true);
+    expect(response.defaultGain).toBe(0);
+  });
+
   it('reutiliza processador existente quando checkProcessor reporta exists: true', async () => {
     const chrome = createChromeMock();
 

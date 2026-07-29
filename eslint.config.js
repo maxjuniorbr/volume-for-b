@@ -30,6 +30,7 @@ export default [
         FAVICON_URL_MAX: 'readonly',
         ErrorCodes: 'readonly',
         clampVolume: 'readonly',
+        resolveGain: 'readonly',
         // SW-specific
         importScripts: 'readonly'
       }
