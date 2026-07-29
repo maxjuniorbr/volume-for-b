@@ -267,11 +267,22 @@ async function checkExistingProcessor(tabId) {
   }
 }
 
+// O offscreen sinaliza falha pelo corpo da resposta, não por rejeição. E quando
+// nenhum listener responde (offscreen ausente, popup aberto recebendo a mensagem
+// no lugar dele), sendMessage resolve `undefined`. Ambos os casos precisam ser
+// tratados como falha: seguir adiante deixaria a aba mutada e sem processamento.
+function assertOffscreenAck(result, fallbackError) {
+  if (!result?.success) {
+    throw new Error(result?.error || fallbackError);
+  }
+}
+
 async function acquireProcessor(tabId, gain) {
   const existing = await checkExistingProcessor(tabId);
 
   if (existing) {
-    await chrome.runtime.sendMessage({ action: 'setGain', tabId, gain });
+    const reused = await chrome.runtime.sendMessage({ action: 'setGain', tabId, gain });
+    assertOffscreenAck(reused, ErrorCodes.NO_PROCESSOR);
     return { success: true };
   }
 
@@ -280,7 +291,8 @@ async function acquireProcessor(tabId, gain) {
     const mediaStreamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tabId });
     await chrome.tabs.update(tabId, { muted: true });
     mutedByUs = true;
-    await chrome.runtime.sendMessage({ action: 'processAudio', tabId, mediaStreamId, gain });
+    const processed = await chrome.runtime.sendMessage({ action: 'processAudio', tabId, mediaStreamId, gain });
+    assertOffscreenAck(processed, ErrorCodes.CAPTURE_FAILED);
     return { success: true };
   } catch (error) {
     if (mutedByUs) {
