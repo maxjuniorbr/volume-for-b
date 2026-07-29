@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-29
+
 ### Added
 - `−5` and `+5` buttons beside the volume reading, for adjusting in 5% steps
   without dragging the slider. They snap to the nearest multiple of 5, so
