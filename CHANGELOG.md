@@ -22,6 +22,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   treated zero as "no value stored".
 - A tab could stay muted with nothing playing through it after a failed restore.
   Mute is now asserted only while a live audio processor exists for the tab.
+- Navigating a controlled tab to another site kept saving the gain under the
+  previous domain. The service worker now follows the navigation, and the popup
+  no longer reads the domain out of the DOM.
+- Opening the popup at the same moment a tab changed its audio state could show
+  a controlled tab as uncontrolled, because two concurrent messages raced the
+  state restore.
+- Volume control stopped working until a browser restart if the offscreen audio
+  document died, since its absence was never re-checked.
+
+### Changed
+- The offscreen audio document now closes once no tab is being processed,
+  instead of keeping an audio context open for the rest of the session.
 
 ## [1.1.5] - 2026-05-28
 
