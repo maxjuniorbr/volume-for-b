@@ -13,7 +13,6 @@ const domainInfo = document.getElementById('domainInfo');
 const currentDomain = document.getElementById('currentDomain');
 const tabsList = document.getElementById('tabsList');
 const errorMessage = document.getElementById('errorMessage');
-const successMessage = document.getElementById('successMessage');
 const darkModeToggle = document.getElementById('darkModeToggle');
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -173,7 +172,6 @@ async function startVolumeControl() {
     if (response.success) {
       updateControlState(true, resolveGain(response.defaultGain), false);
       showDomainInfo(response.domain);
-      showSuccess(i18n('msgVolumeStarted', 'Controle de volume iniciado!'));
       await updateTabsList();
     } else {
       updateControlState(false, VOLUME_DEFAULT, false);
@@ -206,7 +204,6 @@ async function stopVolumeControl() {
     if (response.success) {
       updateControlState(false, VOLUME_DEFAULT, false);
       hideDomainInfo();
-      showSuccess(i18n('msgVolumeStopped', 'Controle de volume parado'));
       await updateTabsList();
     } else {
       await checkTabControlStatus();
@@ -243,7 +240,6 @@ async function toggleMute() {
 
     if (response.success) {
       updateMuteState(newMutedState);
-      showSuccess(newMutedState ? i18n('msgTabMuted', 'Aba silenciada') : i18n('msgTabUnmuted', 'Som da aba ativado'));
     } else {
       await checkTabControlStatus();
       showError(translateError(response.error));
@@ -520,22 +516,10 @@ function hideDomainInfo() {
 function showError(message) {
   errorMessage.textContent = message;
   errorMessage.classList.add('is-visible');
-  successMessage.classList.remove('is-visible');
 
   setTimeout(() => {
     errorMessage.classList.remove('is-visible');
   }, ERROR_TOAST_MS);
-}
-
-// Mostrar mensagem de sucesso
-function showSuccess(message) {
-  successMessage.textContent = message;
-  successMessage.classList.add('is-visible');
-  errorMessage.classList.remove('is-visible');
-
-  setTimeout(() => {
-    successMessage.classList.remove('is-visible');
-  }, SUCCESS_TOAST_MS);
 }
 
 // Definir estado de loading do botão.

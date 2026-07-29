@@ -25,7 +25,6 @@ export default [
         SEND_MESSAGE_RETRIES: 'readonly',
         SEND_MESSAGE_BASE_DELAY_MS: 'readonly',
         ERROR_TOAST_MS: 'readonly',
-        SUCCESS_TOAST_MS: 'readonly',
         TAB_TITLE_MAX: 'readonly',
         FAVICON_URL_MAX: 'readonly',
         ErrorCodes: 'readonly',

@@ -27,7 +27,6 @@ const SEND_MESSAGE_BASE_DELAY_MS = 500;
 
 // UI feedback
 const ERROR_TOAST_MS = 5000;
-const SUCCESS_TOAST_MS = 3000;
 
 // String safety
 const TAB_TITLE_MAX = 300;

@@ -71,22 +71,6 @@
         "message": "Audible",
         "description": "Status of audible tab"
     },
-    "msgVolumeStarted": {
-        "message": "Volume control started!",
-        "description": "Success message on start"
-    },
-    "msgVolumeStopped": {
-        "message": "Volume control stopped",
-        "description": "Success message on stop"
-    },
-    "msgTabMuted": {
-        "message": "Tab muted",
-        "description": "Message on mute"
-    },
-    "msgTabUnmuted": {
-        "message": "Tab unmuted",
-        "description": "Message on unmute"
-    },
     "msgSelectTab": {
         "message": "Select a tab to control",
         "description": "Warning to select tab"

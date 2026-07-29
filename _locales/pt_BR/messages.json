@@ -71,22 +71,6 @@
         "message": "Audível",
         "description": "Status de aba com áudio"
     },
-    "msgVolumeStarted": {
-        "message": "Controle de volume iniciado!",
-        "description": "Mensagem de sucesso ao iniciar"
-    },
-    "msgVolumeStopped": {
-        "message": "Controle de volume parado",
-        "description": "Mensagem de sucesso ao parar"
-    },
-    "msgTabMuted": {
-        "message": "Aba silenciada",
-        "description": "Mensagem ao mutar"
-    },
-    "msgTabUnmuted": {
-        "message": "Som da aba ativado",
-        "description": "Mensagem ao desmutar"
-    },
     "msgSelectTab": {
         "message": "Selecione uma aba para controlar",
         "description": "Aviso para selecionar aba"
