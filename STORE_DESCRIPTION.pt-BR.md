@@ -7,6 +7,7 @@ Use quando vídeos, aulas, lives ou chamadas estiverem com áudio baixo mesmo co
 O que você encontra:
 
 - controle de volume por aba
+- slider livre e botões de −5% / +5% para ajuste fino
 - mute e reset rápidos
 - memória por domínio
 - tema claro e escuro

@@ -36,10 +36,47 @@ which tabs are controlled and at what gain, persisted to `chrome.storage`.
 
 ### Service worker state
 
-The service worker is killed and restarted freely by Chrome. Controller state must
-survive that. When restoring, only discard a tab if `chrome.tabs.get` rejects —
-never filter by `audible`, since a controlled tab can be momentarily silent.
-Permanent cleanup belongs to `chrome.tabs.onRemoved`, not to transient errors.
+The service worker is killed and restarted freely by Chrome — roughly 30s of idle
+is enough. Controller state must survive that, so **anything a handler mutates has
+to be persisted**, not just held in memory: on wakeup the state read back from
+storage is pushed to the audio graph, and a stale value silently overwrites what
+the user just set.
+
+When restoring, only discard a tab if `chrome.tabs.get` rejects — never filter by
+`audible`, since a controlled tab can be momentarily silent. Permanent cleanup
+belongs to `chrome.tabs.onRemoved`, not to transient errors.
+
+Restore is memoized as a promise, not a boolean flag. A flag set before the `await`
+lets a second concurrent message through while the restore is still running.
+
+### MV3 constraints that are easy to get wrong
+
+- **`chrome.tabCapture` does not exist in the offscreen document.** The service
+  worker calls `getMediaStreamId` and passes the id along; the offscreen document
+  only consumes it via `getUserMedia`. Test mocks must not offer this API to the
+  offscreen context, or they hide the failure.
+- **`runtime.onSuspend` never fires for MV3 service workers** — it only ever
+  applied to MV2 event pages. There is no pre-termination hook, so nothing can be
+  cleaned up "on the way out". A tab muted while the extension is uninstalled
+  stays muted; that case is unrecoverable by design.
+- **The offscreen document reports failure in the reply body, not by rejecting.**
+  And when no listener answers, `sendMessage` resolves `undefined`. Both must be
+  treated as failure — check `result?.success`.
+- **Ask `chrome.offscreen.hasDocument()`** instead of tracking an in-memory flag;
+  the document can die independently of the service worker. It closes itself once
+  no tab is being processed, and is recreated on demand.
+- **A tab stays muted only while a live processor exists for it.** Muting is what
+  prevents double audio; without processing, muting is silence for nothing.
+
+### Popup UI
+
+Design tokens live in `popup.css` and mirror the landing page for color, spacing
+and radii. Typography deliberately diverges: the popup uses system font stacks
+because no font binaries ship with the extension.
+
+There are no success toasts. Button labels and states are the feedback — the mute
+button flips to Unmute, Start disables, and so on. Errors do get a message, since
+no button state can convey a failure.
 
 ## Conventions
 
@@ -61,10 +98,18 @@ PR creation is disabled for the same reason, while its alerts stay enabled.
 commit messages — and only for changes visible to users. Tooling changes are not
 recorded there.
 
-**Code** — ES modules throughout, ESLint v10 flat config. Tests are vitest, colocated
-in `tests/`. No build step for extension source: `build-production.js` copies plain
-files, so nothing from `node_modules` ever ships to users. Every npm dependency is a
-devDependency.
+**Code** — ES modules throughout, ESLint v10 flat config. No build step for extension
+source: `build-production.js` copies plain files, so nothing from `node_modules` ever
+ships to users. Every npm dependency is a devDependency.
+
+**Comments** — record why, not what. A comment restating the function name below it
+is noise and gets removed; a comment explaining an API constraint or the reason a
+recovery path exists is load-bearing and stays.
+
+**Tests** — vitest, in `tests/`. `sw.js` and `offscreen.js` are loaded into a
+`node:vm` sandbox with a hand-built `chrome` mock (`tests/sw.helpers.js`,
+`tests/offscreen.helpers.js`). Keep those mocks honest: a mock that exposes an API
+the real context lacks turns a production crash into a passing test.
 
 ## Security
 

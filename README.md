@@ -19,6 +19,7 @@ Extension page: https://maxjuniorbr.github.io/volume-for-b/
 
 - 0% to 600% volume range
 - Per-tab audio control
+- Slider for free adjustment, plus `−5` / `+5` buttons for precise steps
 - Mute, unmute, and quick reset
 - Per-domain memory
 - Light and dark themes
@@ -30,9 +31,11 @@ Extension page: https://maxjuniorbr.github.io/volume-for-b/
 - Chrome Extension Manifest V3
 - `popup.*` for the extension UI
 - `sw.js` for extension orchestration
-- `offscreen.*` for audio processing
+- `offscreen.*` for audio processing, since MV3 service workers have no Web Audio API
+- `constants.js` shared by all three contexts
 - `_locales/` for localization
 - `tests/` covering the core flow
+- No runtime dependencies: nothing from `node_modules` ships to users
 
 ## Run Locally
 
@@ -53,19 +56,24 @@ After that:
 ## Main Scripts
 
 ```bash
-npm run dev        # Developer-mode instructions
-npm run build      # Production build
+npm run verify     # lint:check + test — run this before every commit
+npm test           # Run unit tests
+npm run test:watch # Run tests in watch mode
 npm run lint       # Fix lint issues
 npm run lint:check # Validate lint without changing files
-npm test           # Run unit tests
+npm run audit      # Check dependencies for high-severity advisories
+npm run build      # Production build
 npm run clean      # Remove build artifacts
 ```
 
+The Node version is pinned in `.nvmrc`.
+
 ## Quality and Validation
 
-- `npm run lint:check`
-- `npm test`
-- `npm run build`
+- `npm run verify` is the gate: lint plus the full test suite
+- `npm run audit` for dependency advisories
+- GitHub Actions runs `verify`, `audit` and `build` on every push to `main`, plus
+  a scheduled `audit` every Monday
 - SonarCloud with an `A` Quality Gate target
 
 ## Project Documents

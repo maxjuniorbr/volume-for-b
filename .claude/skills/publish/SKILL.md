@@ -15,10 +15,16 @@ Work through the steps in order. Stop and report if any check fails.
 npm run verify
 npm run audit
 git status --short
+gh run list --workflow=ci.yml --limit 1
 ```
 
-Tests and lint must pass and the working tree must be clean. Confirm the current
-branch is `main` and synced with `origin/main`.
+Tests and lint must pass, the working tree must be clean, and CI must be green on
+the current commit. Confirm the branch is `main` and synced with `origin/main`.
+
+Also check the SonarCloud Quality Gate — it evaluates new code and can be in ERROR
+while CI is green, since the two are independent checks. If the SonarQube MCP server
+is connected, `get_project_quality_gate_status` with the project key from
+`.sonarlint/connectedMode.json` answers this directly.
 
 ## 2. Bump the version
 
