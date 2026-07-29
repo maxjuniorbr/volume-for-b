@@ -32,7 +32,6 @@ function clipString(input, max = TAB_TITLE_MAX) {
   return input.length > max ? input.slice(0, max) : input;
 }
 
-// Aceita mensagens apenas de componentes da própria extensão.
 function isFromOwnExtension(sender) {
   return Boolean(sender) && sender.id === chrome.runtime.id;
 }
@@ -58,8 +57,6 @@ chrome.runtime.onInstalled.addListener(async () => {
   await cleanupOldDomains();
   await scheduleCleanupAlarm();
 });
-
-// Limpar domínios não acessados há mais de 30 dias
 
 async function scheduleCleanupAlarm() {
   try {
@@ -186,7 +183,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   };
 
   if (handlers[action]) {
-    // Restaura estado de forma preguiçosa caso o SW tenha acordado do idle.
     ensureStateRestored().then(() => handlers[action]()).catch((error) => {
       console.error('Erro ao processar mensagem:', formatErrorMessage(error));
       sendResponse({ success: false, error: ErrorCodes.INTERNAL });

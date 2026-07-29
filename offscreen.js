@@ -94,7 +94,6 @@ class TabAudioProcessor {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  // Só aceita mensagens de componentes da própria extensão.
   if (!sender || sender.id !== chrome.runtime.id) {
     return false;
   }
@@ -142,7 +141,6 @@ function closeIfIdle() {
   }, 0);
 }
 
-// Verificar se existe processador ativo para uma aba
 function handleCheckProcessor(tabId, sendResponse) {
   const validTabId = toTabId(tabId);
   sendResponse({ exists: validTabId !== null && audioProcessors.has(validTabId) });

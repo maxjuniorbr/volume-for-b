@@ -33,13 +33,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-// Aplicar internacionalização aos elementos
 function applyI18n() {
-  // Atualizar lang do documento baseado na locale
   const uiLocale = chrome.i18n.getUILanguage();
   document.documentElement.lang = uiLocale.startsWith('pt') ? 'pt-BR' : 'en';
 
-  // Aplicar texto traduzido
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.dataset.i18n;
     const message = chrome.i18n.getMessage(key);
@@ -48,7 +45,6 @@ function applyI18n() {
     }
   });
 
-  // Aplicar aria-label traduzido
   document.querySelectorAll('[data-i18n-aria]').forEach(el => {
     const key = el.dataset.i18nAria;
     const message = chrome.i18n.getMessage(key);
@@ -57,7 +53,6 @@ function applyI18n() {
     }
   });
 
-  // Aplicar title traduzido
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
     const key = el.dataset.i18nTitle;
     const message = chrome.i18n.getMessage(key);
@@ -67,12 +62,10 @@ function applyI18n() {
   });
 }
 
-// Obter mensagem i18n com fallback
 function i18n(key, fallback = '') {
   return chrome.i18n.getMessage(key) || fallback;
 }
 
-// Map service-worker error codes to localized, user-facing strings.
 function translateError(code) {
   const map = {
     [ErrorCodes.TAB_NOT_AUDIBLE]: i18n('errTabNotAudible', 'This tab is not playing audio'),
@@ -138,7 +131,6 @@ function setupEventListeners() {
   });
 }
 
-// Carregar estado inicial
 async function loadInitialState() {
   try {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -165,7 +157,6 @@ async function loadInitialState() {
   }
 }
 
-// Iniciar controle de volume
 async function startVolumeControl() {
   try {
     setLoading(startBtn, true);
@@ -197,7 +188,6 @@ async function startVolumeControl() {
   }
 }
 
-// Parar controle de volume
 async function stopVolumeControl() {
   try {
     setLoading(stopBtn, true);
@@ -225,7 +215,6 @@ async function stopVolumeControl() {
   }
 }
 
-// Alternar mute
 async function toggleMute() {
   // Bloqueio reentrante para evitar cliques sucessivos disparando estados conflitantes.
   if (muteBtn.disabled) {
@@ -283,7 +272,6 @@ async function stepVolume(direction) {
   await setVolume(next);
 }
 
-// Definir volume
 async function setVolume(volume) {
   try {
     const validVolume = clampVolume(volume);
@@ -304,7 +292,6 @@ async function setVolume(volume) {
   }
 }
 
-// Atualizar lista de abas
 async function updateTabsList() {
   try {
     const response = await sendMessage({ action: 'getAudibleTabs' });
@@ -315,8 +302,6 @@ async function updateTabsList() {
 
     renderTabsList(tabs);
 
-    // Se a audibilidade da aba atual mudou e não estamos controlando,
-    // reaplica o estado dos botões para refletir o novo cenário.
     if (wasAudible !== isCurrentTabAudible && !isControlling) {
       updateControlState(false, VOLUME_DEFAULT, false);
     }
@@ -327,7 +312,6 @@ async function updateTabsList() {
   }
 }
 
-// Renderizar lista de abas
 function renderTabsList(tabs) {
   // Limpa de forma segura (sem innerHTML).
   while (tabsList.firstChild) {
@@ -437,7 +421,6 @@ async function selectTab(tabId) {
   await checkTabControlStatus();
 }
 
-// Verificar status de controle da aba
 async function checkTabControlStatus() {
   try {
     const response = await sendMessage({ action: 'getControlledTabs' });
@@ -463,7 +446,6 @@ function updateControlState(controlling, volume, muted) {
   isControlling = controlling;
   // isMuted é gerenciado por updateMuteState abaixo (fonte única).
 
-  // Iniciar só fica habilitado em abas audíveis e quando ainda não controlamos.
   startBtn.disabled = controlling || !isCurrentTabAudible;
   stopBtn.disabled = !controlling;
   muteBtn.disabled = !controlling;
@@ -476,7 +458,6 @@ function updateControlState(controlling, volume, muted) {
   updateMuteState(muted);
 }
 
-// Atualizar estado do mute
 function updateMuteState(muted) {
   isMuted = muted;
   muteBtn.textContent = muted
@@ -488,7 +469,6 @@ function updateMuteState(muted) {
 function updateVolumeDisplay(volume) {
   volumeValue.textContent = `${volume}%`;
 
-  // Atualizar aria-valuenow para acessibilidade
   volumeSlider.setAttribute('aria-valuenow', volume);
 
   // Nos extremos o passo não tem para onde ir; desabilitar deixa isso explícito
@@ -496,7 +476,6 @@ function updateVolumeDisplay(volume) {
   volumeDownBtn.disabled = !isControlling || volume <= VOLUME_MIN;
   volumeUpBtn.disabled = !isControlling || volume >= VOLUME_MAX;
 
-  // Usar classes CSS para cores que respeitam dark mode
   volumeValue.classList.remove('volume-normal', 'volume-high', 'volume-extreme');
 
   if (volume <= 100) {
@@ -530,18 +509,15 @@ async function refreshControlledDomain() {
   }
 }
 
-// Mostrar informações do domínio
 function showDomainInfo(domain) {
   currentDomain.textContent = domain;
   domainInfo.classList.remove('is-hidden');
 }
 
-// Esconder informações do domínio
 function hideDomainInfo() {
   domainInfo.classList.add('is-hidden');
 }
 
-// Mostrar mensagem de erro
 function showError(message) {
   errorMessage.textContent = message;
   errorMessage.classList.add('is-visible');
@@ -551,7 +527,6 @@ function showError(message) {
   }, ERROR_TOAST_MS);
 }
 
-// Definir estado de loading do botão.
 // Apenas o texto é responsabilidade desta função; o estado `disabled` é
 // gerenciado por `updateControlState` para evitar que reabilitemos botões
 // que já deveriam estar desabilitados após a operação.
@@ -569,7 +544,6 @@ function setLoading(button, loading) {
   }
 }
 
-// Send a message to the service worker with bounded retry + exponential backoff.
 async function sendMessage(message, retries = SEND_MESSAGE_RETRIES) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {

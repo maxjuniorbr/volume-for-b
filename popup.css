@@ -42,12 +42,9 @@ html.preload *::after {
   --warning: #b45309;
   --warning-soft: rgba(180, 83, 9, 0.10);
 
-  --success: #15803d;
-  --success-soft: rgba(21, 128, 61, 0.10);
 
   --focus-ring: rgba(45, 106, 0, 0.45);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
 
   --radius-sm: 6px;
   --radius: 10px;
@@ -88,12 +85,9 @@ html.preload *::after {
   --warning: #ffb84d;
   --warning-soft: rgba(255, 184, 77, 0.14);
 
-  --success: #66ddaa;
-  --success-soft: rgba(102, 221, 170, 0.14);
 
   --focus-ring: rgba(217, 255, 63, 0.55);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 /* ── Reset ── */
@@ -191,12 +185,6 @@ body {
 .dark-mode .dark-mode-toggle .icon-sun { display: block; }
 .dark-mode .dark-mode-toggle .icon-moon { display: none; }
 
-/* Legacy toggle bits left intact in HTML are hidden visually */
-.toggle-switch,
-.toggle-label {
-  display: none;
-}
-
 /* ── Message area (toast-like inline) ── */
 .message-area {
   display: block;
@@ -257,7 +245,7 @@ body {
 
 .btn-step {
   flex: none;
-  min-width: 36px;
+  width: 32px;
   padding: 0;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
