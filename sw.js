@@ -625,12 +625,10 @@ async function restoreControllerState() {
         tabControllers.set(tabId, controller);
 
         try {
-          const restored = await chrome.runtime.sendMessage({
-            action: 'restoreAudio',
-            tabId,
-            gain: controller.currentGain
-          });
-          assertOffscreenAck(restored, ErrorCodes.CAPTURE_FAILED);
+          // A captura precisa ser pedida daqui: chrome.tabCapture não é exposto
+          // ao documento offscreen. O acquireProcessor obtém o mediaStreamId no
+          // service worker e o repassa ao offscreen, que só consome.
+          await acquireProcessor(tabId, controller.currentGain);
 
           // Com processador vivo, a aba precisa permanecer muda: o som real sai
           // pelo documento offscreen. Reafirmar aqui cobre o caso de o mute ter

@@ -42,7 +42,11 @@ describe('restoreControllerState', () => {
     });
     chrome.storage.local.set.mockResolvedValue(undefined);
     chrome.offscreen.createDocument.mockResolvedValue(undefined);
-    chrome.runtime.sendMessage.mockResolvedValue({ success: true });
+    chrome.tabs.update.mockResolvedValue(undefined);
+    chrome.tabCapture.getMediaStreamId.mockImplementation(async ({ targetTabId }) => `stream-${targetTabId}`);
+    chrome.runtime.sendMessage.mockImplementation(async ({ action }) => (
+      action === 'checkProcessor' ? { exists: false } : { success: true }
+    ));
 
     chrome.tabs.get.mockImplementation((tabId) => {
       if (tabId === 1) {
@@ -69,15 +73,21 @@ describe('restoreControllerState', () => {
     await restorePromise;
 
     expect(chrome.offscreen.createDocument).toHaveBeenCalledTimes(1);
-    expect(chrome.runtime.sendMessage).toHaveBeenCalledTimes(2);
+
+    // A captura é pedida pelo service worker — chrome.tabCapture não existe no
+    // documento offscreen — e o mediaStreamId vai junto no processAudio.
+    expect(chrome.tabCapture.getMediaStreamId).toHaveBeenCalledWith({ targetTabId: 1 });
+    expect(chrome.tabCapture.getMediaStreamId).toHaveBeenCalledWith({ targetTabId: 2 });
     expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
-      action: 'restoreAudio',
+      action: 'processAudio',
       tabId: 1,
+      mediaStreamId: 'stream-1',
       gain: 110
     });
     expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
-      action: 'restoreAudio',
+      action: 'processAudio',
       tabId: 2,
+      mediaStreamId: 'stream-2',
       gain: 135
     });
   });

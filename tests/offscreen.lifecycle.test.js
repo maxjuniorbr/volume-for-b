@@ -7,6 +7,9 @@
  *   aberto indefinidamente consumindo recursos.
  * - initAudioContext não aguardava resume(), então o grafo podia ser montado com
  *   o contexto suspenso — nós conectados que não produzem som.
+ * - handleRestoreAudio chamava chrome.tabCapture.getMediaStreamId, que não existe
+ *   em documentos offscreen: "Cannot read properties of undefined". A captura é
+ *   responsabilidade do service worker; aqui o mediaStreamId só é consumido.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -20,15 +23,6 @@ describe('toTabId — validação do identificador de aba', () => {
 
     expect(response).toEqual({ success: false, error: 'internal_error' });
     expect(offscreen.processorCount()).toBe(0);
-  });
-
-  it('rejeita restoreAudio com tabId inválido', async () => {
-    const offscreen = loadOffscreen();
-
-    const response = await offscreen.call('handleRestoreAudio', [0, 150]);
-
-    expect(response).toEqual({ success: false, error: 'internal_error' });
-    expect(offscreen.chrome.tabCapture.getMediaStreamId).not.toHaveBeenCalled();
   });
 
   it('checkProcessor responde false para tabId inválido', async () => {
@@ -46,6 +40,42 @@ describe('toTabId — validação do identificador de aba', () => {
 
     expect(response).toEqual({ success: true });
     expect(offscreen.processorCount()).toBe(1);
+  });
+});
+
+describe('captura de áudio', () => {
+  it('consome o mediaStreamId recebido, sem depender de chrome.tabCapture', async () => {
+    const offscreen = loadOffscreen();
+
+    // O mock de chrome não tem tabCapture, igual ao ambiente real do offscreen.
+    expect(offscreen.chrome.tabCapture).toBeUndefined();
+
+    const response = await offscreen.call('handleProcessAudio', [5, 'stream-do-sw', 200]);
+
+    expect(response).toEqual({ success: true });
+    expect(offscreen.context.navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({
+      audio: {
+        mandatory: {
+          chromeMediaSource: 'tab',
+          chromeMediaSourceId: 'stream-do-sw'
+        }
+      },
+      video: false
+    });
+  });
+
+  it('não expõe nenhum handler que tente capturar por conta própria', () => {
+    const offscreen = loadOffscreen();
+    const listener = offscreen.chrome.runtime.onMessage.addListener.mock.calls[0][0];
+
+    // 'restoreAudio' foi removido: era o único caminho que chamava tabCapture.
+    const handled = listener(
+      { action: 'restoreAudio', tabId: 1, gain: 100 },
+      { id: 'test-extension-id' },
+      () => {}
+    );
+
+    expect(handled).toBeUndefined();
   });
 });
 

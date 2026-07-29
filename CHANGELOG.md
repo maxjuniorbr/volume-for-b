@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The slider keeps its 1% granularity for fine adjustment.
 
 ### Fixed
+- Restoring audio after the service worker restarted always failed with
+  `Cannot read properties of undefined (reading 'getMediaStreamId')`. The
+  offscreen document was trying to capture the tab itself, but `chrome.tabCapture`
+  is not available there. Capture is now requested by the service worker, which
+  hands the stream id over — the same path already used when starting control.
 - Volume and mute adjustments were lost roughly 30 seconds after being made.
   The service worker only kept them in memory, so when Chrome recycled it the
   gain read back from storage was the stale one and was pushed to the audio

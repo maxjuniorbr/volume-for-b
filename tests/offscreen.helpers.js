@@ -41,9 +41,11 @@ export function createStreamMock() {
 }
 
 export function loadOffscreen({ audioContext = createAudioContextMock() } = {}) {
+  // Sem `tabCapture` de propósito: a API não é exposta a documentos offscreen.
+  // Se algum dia o código voltar a chamá-la aqui, o teste quebra em vez de o
+  // usuário receber "Cannot read properties of undefined".
   const chrome = {
-    runtime: { onMessage: { addListener: vi.fn() }, id: 'test-extension-id' },
-    tabCapture: { getMediaStreamId: vi.fn() }
+    runtime: { onMessage: { addListener: vi.fn() }, id: 'test-extension-id' }
   };
 
   const context = vm.createContext({

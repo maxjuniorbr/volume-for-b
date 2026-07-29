@@ -103,7 +103,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   const handlers = {
     'processAudio': () => handleProcessAudio(message.tabId, message.mediaStreamId, message.gain, sendResponse),
-    'restoreAudio': () => handleRestoreAudio(message.tabId, message.gain, sendResponse),
     'stopProcessing': () => handleStopProcessing(message.tabId, sendResponse),
     'setGain': () => handleSetGain(message.tabId, message.gain, sendResponse),
     'setMute': () => handleSetMute(message.tabId, message.muted, sendResponse),
@@ -115,6 +114,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 });
+
+// Este documento nunca chama chrome.tabCapture: a API não é exposta a documentos
+// offscreen. O service worker obtém o mediaStreamId e o envia em `processAudio`;
+// aqui ele é apenas consumido por getUserMedia.
 
 // Normaliza o tabId recebido por mensagem. Devolve null em vez de 0 para
 // entradas inválidas: colapsar tudo para 0 criava uma chave real no mapa, que
@@ -177,37 +180,6 @@ async function handleProcessAudio(tabId, mediaStreamId, gain, sendResponse) {
 
   } catch (error) {
     console.error('Failed to process audio:', error);
-    sendResponse({ success: false, error: ErrorCodes.CAPTURE_FAILED });
-  }
-}
-
-async function handleRestoreAudio(tabId, gain, sendResponse) {
-  try {
-    const validTabId = toTabId(tabId);
-    if (validTabId === null) {
-      sendResponse({ success: false, error: ErrorCodes.INTERNAL });
-      return;
-    }
-
-    if (audioProcessors.has(validTabId)) {
-      audioProcessors.get(validTabId).setGain(gain);
-      sendResponse({ success: true });
-      return;
-    }
-
-    const mediaStreamId = await chrome.tabCapture.getMediaStreamId({
-      targetTabId: validTabId
-    });
-
-    if (!mediaStreamId) {
-      sendResponse({ success: false, error: ErrorCodes.CAPTURE_FAILED });
-      return;
-    }
-
-    await handleProcessAudio(validTabId, mediaStreamId, gain, sendResponse);
-
-  } catch (error) {
-    console.error('Failed to restore audio:', error);
     sendResponse({ success: false, error: ErrorCodes.CAPTURE_FAILED });
   }
 }
