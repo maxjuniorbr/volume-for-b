@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "sonarqube": {
+      "type": "stdio",
+      "command": "bash",
+      "args": [
+        "-c",
+        "PROJECT_DIR=\"${CLAUDE_PROJECT_DIR:-.}\"; if [ -f \"$PROJECT_DIR/.env.local\" ]; then set -a; . \"$PROJECT_DIR/.env.local\"; set +a; fi; SONARQUBE_TOKEN=\"$SONAR_TOKEN\" SONARQUBE_ORG=maxjuniorbr SONARQUBE_CLOUD_URL=https://sonarcloud.io SONARQUBE_IDE_PORT=64120 exec docker run --init -i --rm --network=host -v \"$PROJECT_DIR:/app/mcp-workspace\" -e SONARQUBE_TOKEN -e SONARQUBE_ORG -e SONARQUBE_CLOUD_URL -e SONARQUBE_IDE_PORT mcp/sonarqube"
+      ]
+    }
+  }
+}

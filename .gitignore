@@ -30,7 +30,8 @@ Thumbs.db
 *.swo
 *.code-workspace
 
-# AI context: CLAUDE.md and .claude/skills/ are versioned on purpose.
-# Only machine-local overrides are ignored.
+# AI context: CLAUDE.md, .claude/skills/ and .mcp.json are versioned on purpose.
+# Only machine-local overrides are ignored. The SonarQube MCP server reads
+# SONAR_TOKEN from .env.local, which stays ignored via the .env* rule above.
 CLAUDE.local.md
 .claude/settings.local.json
