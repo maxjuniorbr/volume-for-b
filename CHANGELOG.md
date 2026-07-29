@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   document died, since its absence was never re-checked.
 
 ### Changed
+- Confirmation toasts are gone. Starting, stopping and muting no longer pop a
+  message: the buttons already change to reflect the new state, so the toast
+  only added noise and shifted the layout. Errors are still shown, since a
+  failure is not something the button state can convey.
 - The offscreen audio document now closes once no tab is being processed,
   instead of keeping an audio context open for the rest of the session.
 
