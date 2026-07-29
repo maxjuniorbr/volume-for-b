@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Volume and mute adjustments were lost roughly 30 seconds after being made.
+  The service worker only kept them in memory, so when Chrome recycled it the
+  gain read back from storage was the stale one and was pushed to the audio
+  graph, silently undoing the change.
+- A failed audio capture was reported as success. The offscreen document signals
+  failure in the reply body rather than by rejecting, and that reply was being
+  discarded — the tab ended up muted, marked as controlled, and producing no
+  sound at all.
+- Stopping volume control left the tab muted and stuck whenever the offscreen
+  document was gone. Restoring the tab's sound no longer depends on that reply.
+- A gain of `0` saved for a domain came back as `100%`, because the fallback
+  treated zero as "no value stored".
+- A tab could stay muted with nothing playing through it after a failed restore.
+  Mute is now asserted only while a live audio processor exists for the tab.
+
 ## [1.1.5] - 2026-05-28
 
 ### Fixed
