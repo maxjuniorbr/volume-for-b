@@ -1,6 +1,6 @@
 {
   "name": "volume-for-b",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Boost Chrome tab audio up to 600% with per-tab control and local processing.",
   "author": "Dianin",
   "license": "MIT",
