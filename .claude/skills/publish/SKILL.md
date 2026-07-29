@@ -162,11 +162,44 @@ flags a listing issue worth reading.
 git add manifest.json package.json package-lock.json CHANGELOG.md
 git commit -m "chore: release X.Y.Z"
 git tag vX.Y.Z
-git push origin main --tags
+git push origin main
+git push origin vX.Y.Z
 ```
+
+Push the branch and the new tag as two commands. `git push --tags` tries to push
+*every* tag, and one older tag diverges from the remote — the command then exits
+with an error even though main and the new tag went through, which reads as a total
+failure when it isn't.
 
 Commit message is subject-only, as everywhere in this repo. Verify CI goes green
 afterwards.
+
+## 9. Publish the GitHub release
+
+Every previous version has a release; skipping it leaves the tag without notes.
+The body is the version's `CHANGELOG.md` section with each bullet on a single line
+(the file wraps at 80 columns, the releases do not).
+
+```bash
+python3 - <<'EOF' > /tmp/release-notes.md
+import io, re, json
+versao = json.load(io.open('package.json', encoding='utf-8'))['version']
+texto = io.open('CHANGELOG.md', encoding='utf-8').read()
+bloco = re.search(r'## \[%s\] - [\d-]+\n(.*?)\n## \[' % re.escape(versao), texto, re.S).group(1)
+saida = []
+for linha in bloco.strip().split('\n'):
+    if linha.startswith(('###', '- ')) or linha == '':
+        saida.append(linha)
+    else:
+        saida[-1] += ' ' + linha.strip()
+print('\n'.join(saida))
+EOF
+
+gh release create vX.Y.Z --title "vX.Y.Z" --notes-file /tmp/release-notes.md --latest
+```
+
+Match the existing pattern: name equal to the tag, not a draft, not a prerelease,
+no attached assets. Confirm with `gh release view vX.Y.Z`.
 
 ## Verifying without publishing
 
