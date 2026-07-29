@@ -135,6 +135,14 @@
         "message": "Reset volume to 100%",
         "description": "Aria label for reset button"
     },
+    "ariaVolumeDown": {
+        "message": "Decrease volume by 5%",
+        "description": "Accessible label for the −5% button"
+    },
+    "ariaVolumeUp": {
+        "message": "Increase volume by 5%",
+        "description": "Accessible label for the +5% button"
+    },
     "ariaAdjustVolume": {
         "message": "Adjust volume",
         "description": "Aria label for slider"

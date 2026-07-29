@@ -17,6 +17,7 @@ export default [
         VOLUME_MIN: 'readonly',
         VOLUME_MAX: 'readonly',
         VOLUME_DEFAULT: 'readonly',
+        VOLUME_STEP: 'readonly',
         DOMAIN_MAX_AGE_DAYS: 'readonly',
         DOMAIN_KEY_PREFIX: 'readonly',
         CLEANUP_ALARM_NAME: 'readonly',
@@ -30,6 +31,7 @@ export default [
         ErrorCodes: 'readonly',
         clampVolume: 'readonly',
         resolveGain: 'readonly',
+        steppedVolume: 'readonly',
         // SW-specific
         importScripts: 'readonly'
       }

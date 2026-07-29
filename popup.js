@@ -9,6 +9,8 @@ const muteBtn = document.getElementById('muteBtn');
 const resetBtn = document.getElementById('resetBtn');
 const volumeSlider = document.getElementById('volumeSlider');
 const volumeValue = document.getElementById('volumeValue');
+const volumeDownBtn = document.getElementById('volumeDownBtn');
+const volumeUpBtn = document.getElementById('volumeUpBtn');
 const domainInfo = document.getElementById('domainInfo');
 const currentDomain = document.getElementById('currentDomain');
 const tabsList = document.getElementById('tabsList');
@@ -101,14 +103,18 @@ function setupEventListeners() {
   });
 
   volumeSlider.addEventListener('input', (e) => {
-    const volume = Number.parseInt(e.target.value, 10);
-    volumeValue.textContent = `${volume}%`;
+    // updateVolumeDisplay em vez de só escrever o texto: mantém aria-valuenow, a
+    // faixa de cor e o estado dos botões de passo coerentes durante o arraste.
+    updateVolumeDisplay(Number.parseInt(e.target.value, 10));
   });
 
   volumeSlider.addEventListener('change', async (e) => {
     const volume = Number.parseInt(e.target.value, 10);
     await setVolume(volume);
   });
+
+  volumeDownBtn.addEventListener('click', () => stepVolume(-1));
+  volumeUpBtn.addEventListener('click', () => stepVolume(1));
 
   resetBtn.addEventListener('click', async () => {
     if (!isControlling) {
@@ -257,6 +263,24 @@ async function toggleMute() {
       muteBtn.disabled = previousDisabled;
     }
   }
+}
+
+// Ajuste em passos de 5% pelos botões ao lado do valor. Reflete o novo valor na
+// interface antes de confiar na resposta do service worker: o clique precisa
+// parecer instantâneo, e um erro reverte o estado pelo caminho normal.
+async function stepVolume(direction) {
+  if (!isControlling) {
+    return;
+  }
+
+  const next = steppedVolume(volumeSlider.value, direction);
+  if (next === Number.parseInt(volumeSlider.value, 10)) {
+    return;
+  }
+
+  volumeSlider.value = next;
+  updateVolumeDisplay(next);
+  await setVolume(next);
 }
 
 // Definir volume
@@ -466,6 +490,11 @@ function updateVolumeDisplay(volume) {
 
   // Atualizar aria-valuenow para acessibilidade
   volumeSlider.setAttribute('aria-valuenow', volume);
+
+  // Nos extremos o passo não tem para onde ir; desabilitar deixa isso explícito
+  // em vez de oferecer um botão que não faz nada.
+  volumeDownBtn.disabled = !isControlling || volume <= VOLUME_MIN;
+  volumeUpBtn.disabled = !isControlling || volume >= VOLUME_MAX;
 
   // Usar classes CSS para cores que respeitam dark mode
   volumeValue.classList.remove('volume-normal', 'volume-high', 'volume-extreme');

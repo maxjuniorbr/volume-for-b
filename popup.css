@@ -212,7 +212,9 @@ body {
   border-radius: var(--radius-sm);
   font-size: 12px;
   line-height: 1.4;
-  border-left: 3px solid;
+  border-left: 3px solid var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -220,12 +222,6 @@ body {
 
 .error-message.is-visible {
   display: block;
-}
-
-.error-message {
-  background: var(--danger-soft);
-  color: var(--danger);
-  border-color: var(--danger);
 }
 
 /* ── Cards ── */
@@ -245,10 +241,26 @@ body {
 
 .volume-label {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
   margin-bottom: var(--space-2);
+}
+
+/* Os botões de passo ficam ao lado do número que alteram, não junto aos botões
+   de ação — a proximidade é o que torna a função óbvia sem precisar de rótulo. */
+.volume-stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn-step {
+  flex: none;
+  min-width: 36px;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .volume-label label {

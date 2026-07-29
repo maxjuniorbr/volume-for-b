@@ -42,7 +42,15 @@
     <div class="volume-control">
       <div class="volume-label">
         <label for="volumeSlider" data-i18n="labelVolume">Volume</label>
-        <span id="volumeValue" class="volume-value">100%</span>
+        <div class="volume-stepper">
+          <button id="volumeDownBtn" class="btn btn-secondary btn-step" type="button" disabled
+            data-i18n-aria="ariaVolumeDown" data-i18n-title="ariaVolumeDown"
+            aria-label="Diminuir volume em 5%" title="Diminuir volume em 5%">&minus;5</button>
+          <span id="volumeValue" class="volume-value">100%</span>
+          <button id="volumeUpBtn" class="btn btn-secondary btn-step" type="button" disabled
+            data-i18n-aria="ariaVolumeUp" data-i18n-title="ariaVolumeUp"
+            aria-label="Aumentar volume em 5%" title="Aumentar volume em 5%">+5</button>
+        </div>
       </div>
       <input type="range" id="volumeSlider" class="volume-slider" min="0" max="600" value="100" step="1" disabled
         aria-valuemin="0" aria-valuemax="600" aria-valuenow="100" data-i18n-aria="ariaAdjustVolume"

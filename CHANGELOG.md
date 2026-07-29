@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `−5` and `+5` buttons beside the volume reading, for adjusting in 5% steps
+  without dragging the slider. They snap to the nearest multiple of 5, so
+  stepping down from 103% lands on 100% rather than 98%, and they disable
+  themselves at 0% and 600% instead of offering a click that does nothing.
+  The slider keeps its 1% granularity for fine adjustment.
+
 ### Fixed
 - Volume and mute adjustments were lost roughly 30 seconds after being made.
   The service worker only kept them in memory, so when Chrome recycled it the
