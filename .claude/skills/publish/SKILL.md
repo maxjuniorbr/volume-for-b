@@ -62,8 +62,10 @@ print('links verificados')
 Then read the `[Unreleased]` section of `CHANGELOG.md` and confirm that anything
 user-facing in it is also reflected where users actually look:
 
-- a new or changed feature → `README.md` (Core Features) and
-  `STORE_DESCRIPTION.pt-BR.md`
+- a new or changed feature → `README.md` (Core Features),
+  `STORE_DESCRIPTION.pt-BR.md` and the landing page `docs/index.html`, which
+  carries its own copy in **three** languages (`en`, `pt-BR`, `es`) inside the
+  `const T` object — all three must be updated together, accents included
 - a new MV3 constraint or convention learned while fixing something → `CLAUDE.md`
 - a change to the release process itself → this skill
 
