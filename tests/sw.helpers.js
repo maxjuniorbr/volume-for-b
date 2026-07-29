@@ -33,7 +33,8 @@ export function createChromeMock() {
       }
     },
     offscreen: {
-      createDocument: vi.fn()
+      createDocument: vi.fn(),
+      hasDocument: vi.fn().mockResolvedValue(false)
     },
     tabCapture: {
       getMediaStreamId: vi.fn()

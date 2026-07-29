@@ -4,9 +4,8 @@
 importScripts('constants.js');
 
 const tabControllers = new Map();
-let offscreenCreated = false;
 let popupIsOpen = false;
-let stateRestored = false;
+let stateRestorePromise = null;
 
 function formatErrorMessage(error) {
   if (error instanceof Error && error.message) {
@@ -38,14 +37,16 @@ function isFromOwnExtension(sender) {
   return Boolean(sender) && sender.id === chrome.runtime.id;
 }
 
-// Restaura o estado em memória a partir do storage. Idempotente: roda na
-// primeira mensagem após o SW acordar do idle, sem precisar do onStartup.
-async function ensureStateRestored() {
-  if (stateRestored) {
-    return;
-  }
-  stateRestored = true;
-  await restoreControllerState();
+// Restaura o estado em memória a partir do storage. Roda na primeira mensagem
+// após o SW acordar do idle, sem precisar do onStartup.
+//
+// Memoiza a *promise*, não um booleano: com uma flag setada antes do await, uma
+// segunda mensagem concorrente (o popup dispara getControlledTabs e
+// getAudibleTabs quase juntos) passava direto com tabControllers ainda vazio e
+// o popup exibia a aba como não controlada.
+function ensureStateRestored() {
+  stateRestorePromise ??= restoreControllerState();
+  return stateRestorePromise;
 }
 
 chrome.runtime.onStartup.addListener(async () => {
@@ -507,8 +508,11 @@ async function handleSaveDomainGain(domain, gain, sendResponse) {
   }
 }
 
+// Consulta o estado real em vez de confiar numa flag em memória: se o documento
+// offscreen morrer (crash, encerramento pelo navegador), uma flag booleana
+// continuaria `true` e toda operação seguinte falharia até o SW reiniciar.
 async function ensureOffscreenCreated() {
-  if (offscreenCreated) {
+  if (await chrome.offscreen.hasDocument()) {
     return;
   }
 
@@ -518,11 +522,10 @@ async function ensureOffscreenCreated() {
       reasons: ['USER_MEDIA'],
       justification: 'Processamento de áudio para controle de volume'
     });
-    offscreenCreated = true;
   } catch (error) {
-    if (error.message.includes('Only a single offscreen')) {
-      offscreenCreated = true;
-    } else {
+    // Duas chamadas concorrentes: a perdedora recebe este erro e pode seguir,
+    // porque o documento que ela queria já existe.
+    if (!formatErrorMessage(error).includes('Only a single offscreen')) {
       throw error;
     }
   }
