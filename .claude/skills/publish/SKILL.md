@@ -1,0 +1,131 @@
+---
+name: publish
+description: Publish a new version of the volume-for-b extension to the Chrome Web Store. Use when releasing, publishing or deploying the extension.
+argument-hint: "[description of what changed in this version]"
+disable-model-invocation: true
+---
+
+Publish volume-for-b to the Chrome Web Store. Changes in this version: $ARGUMENTS
+
+Work through the steps in order. Stop and report if any check fails.
+
+## 1. Preflight
+
+```bash
+npm run verify
+npm run audit
+git status --short
+```
+
+Tests and lint must pass and the working tree must be clean. Confirm the current
+branch is `main` and synced with `origin/main`.
+
+## 2. Bump the version
+
+The version lives in **two** files and they must match — `manifest.json` is what
+ships, `package.json` is what the tooling reports. They have drifted before.
+
+```bash
+npm version <patch|minor|major> --no-git-tag-version
+```
+
+Then set the identical value in `manifest.json`. Choose the bump by semver: patch for
+a bug fix or internal change, minor for a new feature, major for a breaking change.
+
+Add a matching section to `CHANGELOG.md` under the release version, following the
+Keep a Changelog format already in the file. Only user-visible changes belong there.
+
+## 3. Build
+
+```bash
+npm run build
+```
+
+Confirm `volume-for-b-production.zip` is generated and the reported version matches
+the bump. The build reads the Extension ID from `build.config.js`, which is
+gitignored.
+
+## 4. Authenticate
+
+Get a token:
+
+```bash
+export PATH="$PATH:$HOME/google-cloud-sdk/bin"
+TOKEN=$(gcloud auth application-default print-access-token)
+```
+
+If that fails with `invalid_grant`, the refresh token expired and you must
+re-authenticate. **This command has two non-obvious requirements** — the plain
+`gcloud auth application-default login` does not work:
+
+```bash
+gcloud auth application-default login \
+  --client-id-file=<path to the volume-for-b OAuth desktop client JSON> \
+  --scopes=https://www.googleapis.com/auth/chromewebstore,https://www.googleapis.com/auth/cloud-platform
+```
+
+- `--client-id-file` is mandatory. Without it gcloud falls back to its built-in
+  client, which Google blocks for the `chromewebstore` scope — the browser shows
+  "This app is blocked". The client belongs to the `volume-for-b` GCP project and can
+  be downloaded from the Cloud Console credentials page.
+- `cloud-platform` must be in the scope list even though only `chromewebstore` is
+  used; gcloud refuses to write ADC without it.
+
+The login is interactive. Ask the user to run it rather than running it yourself.
+
+If refresh tokens keep expiring after ~7 days, the OAuth consent screen is still in
+"Testing" mode. Switching it to "In production" fixes that permanently.
+
+## 5. Upload
+
+```bash
+EXT_ID=$(grep -oP "EXTENSION_ID:\s*'\K[^']+" build.config.js)
+
+curl -s -X PUT \
+  "https://www.googleapis.com/upload/chromewebstore/v1.1/items/$EXT_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "x-goog-api-version: 2" \
+  -H "Content-Type: application/zip" \
+  --data-binary @volume-for-b-production.zip | python3 -m json.tool
+```
+
+Expect `"uploadState": "SUCCESS"`. Anything else — stop and report the response.
+
+## 6. Publish
+
+Confirm with the user before this step. It makes the version public and cannot be
+undone; a mistake requires shipping another version.
+
+```bash
+curl -s -X POST \
+  "https://www.googleapis.com/chromewebstore/v1.1/items/$EXT_ID/publish" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "x-goog-api-version: 2" \
+  -H "Content-Length: 0" | python3 -m json.tool
+```
+
+Expect `"status": ["OK"]`. A `PUBLISHED_WITH_FRICTION_WARNING` also means success but
+flags a listing issue worth reading.
+
+## 7. Record the release
+
+```bash
+git add manifest.json package.json package-lock.json CHANGELOG.md
+git commit -m "chore: release X.Y.Z"
+git tag vX.Y.Z
+git push origin main --tags
+```
+
+Commit message is subject-only, as everywhere in this repo. Verify CI goes green
+afterwards.
+
+## Verifying without publishing
+
+To read the item's current state at any time — safe, changes nothing:
+
+```bash
+curl -s "https://www.googleapis.com/chromewebstore/v1.1/items/$EXT_ID?projection=DRAFT" \
+  -H "Authorization: Bearer $TOKEN" -H "x-goog-api-version: 2" | python3 -m json.tool
+```
+
+`crxVersion` is the version currently live in the store.

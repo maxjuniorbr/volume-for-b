@@ -7,6 +7,9 @@ build/
 # Configuração de produção (contém Extension ID sensível)
 build.config.js
 
+# Credenciais OAuth (Chrome Web Store / gcloud)
+client_secret*.json
+application_default_credentials.json
 
 # Node modules
 node_modules/
@@ -27,5 +30,7 @@ Thumbs.db
 *.swo
 *.code-workspace
 
-# AI context (local, contains environment-specific paths)
-.github/copilot-instructions.md
+# AI context: CLAUDE.md and .claude/skills/ are versioned on purpose.
+# Only machine-local overrides are ignored.
+CLAUDE.local.md
+.claude/settings.local.json
